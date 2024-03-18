@@ -1,0 +1,43 @@
+\subsection{Use cases}
+
+- General, global allocator \\
+- Concurrent in thread-local gc
+
+\subsection{Allocating on Already Used Memory} \label{sec:freerangeexpl}
+There may be situations in which the use of an allocator may not be the most efficient option. For instance, one could opt for bump-pointer allocation initially and then switch to a more advanced allocator when significant external fragmentation arises. This approach allows for maximizing the speed advantage of bump-pointer allocations for as long as possible. In the context of ZGC, this means that the allocator is employed selectively in situations where it is considered more effective than the usual bump-pointer operation.
+
+Normally, an allocator has full authority over its allocatable memory region, allowing it to store data and allocate memory locations as needed. However, in this particular scenario, the allocator must be able to allocate around occupied chunks within its memory area. This imposes certain limitations on the allocator, specifically preventing it from assuming that any random memory is available for its utilization. This affects the possibilities of where to store the allocator metadata, which is commonly stored within its memory region.
+
+When working with previously allocated memory, the allocator is initially fully occupied, leaving no available locations for allocation. The allocator then requires the user to indicate the specific locations of the occupied memory or the intervals between them. This process essentially involves the user defining free regions within the memory space that the allocator can utilize. In ZGC, the live analysis of a page contains information on live objects and can be used to find the specific memory locations that are fixed, enabling the deallocation of the intervals between them.
+
+\subsection{Finding Block Buddies} \label{sec:findbuddiesexpl}
+When deallocating, the allocator must determine the correct block to deallocate given the memory address. However, a particular address can come from any block level. The simplest solution is to require the user to provide additional information about the allocated size, and then use that to calculate from which level to deallocate from. This is very fast and, if possible for the user, leads to the lowest overhead.
+
+Another solution is to store the level of each allocation, either inside the block or outside it, in a separate data structure. This is not very memory efficient, but is simple and lookup is fast. When the data is stored within a block, the usable space becomes smaller and of inconvenient size. If the data is stored separately, each possible block location can instead be stored, resulting in a slightly larger but constant overhead.
+
+A third way is to use a bitmap to track which blocks have been split. With this information, it is possible to deduce the size of a block at a particular address. This is very memory efficient, but more operations are needed to find the correct blocks. Figure~\ref{fig:buddybmapsplit} shows how this bitmap looks after the same previous 16-byte block allocation. We can see that all blocks above that block have been marked as split. We can also see that the smallest blocks do not require an entry in the bitmap as they cannot be split. When a block is deallocated, the allocator will start at the top of the bitmap, then traverse down until the block is no longer marked as split.
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.9\textwidth]{figures/bbuddy_bmap_split.svg}
+    \caption{The state of the split blocks-bitmap and free-list of a binary buddy allocator after one 16-byte allocation.}
+    \label{fig:buddybmapsplit}
+\end{figure}
+
+\subsection{Splitting and Merging of Blocks} \label{sec:lazyexpl}
+The operations of splitting and merging blocks are costly and should therefore be minimized. The binary buddy allocator merges blocks whenever possible, but this often results in the need to immediately split blocks afterward. To reduce the overhead associated with frequent splitting and merging, a lazy layer can be implemented on top of the ordinary buddy allocator (the buddy layer). The lazy layer includes a separate free-list that is independent of the free-list of the buddy layer. This separate free-list does not involve any splitting or merging; it solely stores blocks of different sizes.
+
+When deallocating using a lazy layer, the block is inserted into the free-list of the lazy layer instead of the buddy layer. However, if the size of the lazy layer reaches a certain threshold, the block is inserted into the buddy layer as normal. During allocation, the lazy layer is first checked for a block of the correct size. Only if this fails, blocks from the buddy layer are split. If both of these steps fail, the lazy layer can be emptied to allow for the merging of smaller blocks in order to meet the required allocation size.
+
+\subsection{Skewed Allocation Distribution} \label{sec:skewedexpl}
+In the binary buddy allocator, smaller blocks require more work due to the need for more splits and more potential merges. This contrasts with real-world scenarios, where smaller allocations are more frequent and larger ones are less common. Ideally, the allocation and deallocation processes should be most efficient for the most commonly requested allocation size.
+
+\subsection{No Concurrency Support (reword title)} \label{sec:concurrencyexpl}
+
+In a normal buddy allocator, the size of the largest block is equal to the entire provided memory, and is then immediately split down into smaller blocks when allocating. A consequence of this is that when less memory is used, the largest blocks become very large. This is a problem in parallel programming, where many allocations can happen concurrently. Only one allocation can split the large block, leading to degraded performance with more concurrent allocations. 
+
+A solution to this is to set the maximum block sizes lower than the entire memory size, then have it consist of many regions of the same size, with each region containing the normal buddy block structure. For example, one could have 8 regions, each having a maximum block size of $\frac{1}{8}$th the entire memory size, which would allow 8 allocations concurrently. Diving the memory into regions would both limit the possible number of merges, increasing performance, and make the memory less fragmented if allocations to some regions are prioritized.
+
+% what is the problem
+% how can it be solved
+% why is it better

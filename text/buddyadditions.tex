@@ -1,0 +1,80 @@
+At the time of writing, the original binary buddy allocator developed by K.C. Knowlton is nearly 60 years old. Over the years, numerous enhancements and advancements have been made, including refining the initial design and adapting it for new applications and scenarios.
+
+\subsection{Binary Tree Buddy Allocator}
+TODO: Find and add a good source
+
+The original binary buddy allocator keeps track of available blocks by organizing them into different free-lists. Consequently, every time an allocation or deallocation occurs, entries must be added to and removed from these lists. If a block needs to be split or can be merged, even more operations are needed. To avoid these costly free-list manipulations, an implicit free-list can be implemented using a binary tree structure. This tree includes all the necessary details to recreate the original free-list.
+
+The tree stores the maximum allocation size for each block or its children. Since blocks are evenly divided into two, only the block's ``level'' needs to be stored to determine its size. The initial state of a binary tree buddy allocator is illustrated in Figure~\ref{fig:btbuddyinitial}. Each level of the tree represents a specific size, and the root level corresponds to the entire memory space.
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.9\textwidth]{figures/btbuddyinitial}
+    \caption{The initial state of the binary tree and its free-list equivalent in a binary tree buddy allocator.}
+    \label{fig:btbuddyinitial}
+\end{figure}
+
+\subsubsection{Allocation in a Binary Tree Buddy Allocator}
+When allocating with a binary tree, the level required for the allocation size is first determined. Then, a binary search is started from the root node of the tree. The node is checked if the available level is high enough; if it is, it checks the left child. If the left child does not have a large enough block available, the right child is chosen instead. This search process continues recursively on the child node until the correct level within the tree is reached. Upon finding a suitable node, its level is set to 0, and the parent nodes are updated to reflect the new state of their children.
+
+To illustrate this, Figure~\ref{fig:btbudydallocated} shows the state of a binary tree buddy allocator following the allocation of a 32-byte and a 16-byte block. We can see that the initial allocation is placed in the leftmost node at the second-lowest level, while the subsequent allocation is placed to the right of it at the lowest level. Consequently, the entire left branch of the binary tree now only contains one 16-byte block, indicated by the presence of only ones stored in the respective nodes.
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.9\textwidth]{figures/btbuddyallocated}
+    \caption{The state of the binary tree and its free-list equivalent in a binary tree buddy allocator after one 32-byte and one 16-byte allocation.}
+    \label{fig:btbudydallocated}
+\end{figure}
+
+\subsubsection{Deallocation in a Binary Tree Buddy Allocator}
+Deallocating in a binary tree buddy allocator is also a simple process. Initially, the node that has been deallocated is set to its corresponding level, followed by updating its parent nodes to reflect this change. When the buddy of a block is also free, signified by it having the same level as the recently deallocated node, they are merged. The merging operation in a binary tree involves increasing the level of the parent by one, indicating that the entire memory space it represents is now available.
+
+\subsection{Inverse Buddy Allocator}
+
+To improve the speed of allocating smaller blocks, adjustments are necessary to the binary buddy allocator. H. Park et al. proposed an alternative method for organizing the metadata of a binary buddy allocator, which they call an inverse Buddy Allocator (iBuddy Allocator) \cite{park2014ibuddy}. An iBuddy allocator can allocate individual blocks in constant time, although at the expense of slower allocations for larger blocks. Rather than dividing larger blocks into smaller ones to fulfill allocations, all blocks are initially split, and merging is only done during larger allocations.
+
+\subsubsection{Allocation in an Inverse Buddy Allocator}
+In an iBuddy allocator, blocks of different sizes that overlap the same memory are all present in the free-list and bitmap at the same time. Consider Figure~\ref{fig:ibuddyinitial}, which shows a valid initial state of an ibuddy allocator. We can see that all potential addresses for the smallest-size blocks are present in the free-list, but at different levels. In an ibuddy allocator, the bitmap takes on additional meaning. When a block is marked as free, it implies that all smaller blocks at that memory location are also free and available for allocation.
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.9\textwidth]{figures/ibuddy_bmap_initial}
+    \caption{The initial state of the free-list and bitmap in an inverse binary buddy allocator.}
+    \label{fig:ibuddyinitial}
+\end{figure}
+
+Due to the new structure of the bitmap, it is possible to allocate single-sized blocks in place of larger blocks without affecting other blocks in the bitmap. As such, when using an iBuddy allocator, the largest available block in the free-list is utilized for allocation, irrespective of the allocation size. Consider Figure~\ref{fig:ibuddyallocated}, which shows an allocation of one block of the smallest size. The largest block from the preceding figure has been taken out of the free-list and bitmap, whereas the remainder of the free-list and bitmap remain unaltered. This allocation did not influence other blocks, and all other smallest-size blocks are still accessible at different levels. No explicit block splitting is needed, and by storing the highest level of the free-list with available blocks, the allocation of smallest-sized blocks can be done in constant time.
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.9\textwidth]{figures/ibuddy_bmap_allocated}
+    \caption{The state of the free-list and bitmap in an inverse binary buddy allocator after one
+16-byte allocation.}
+    \label{fig:ibuddyallocated}
+\end{figure}
+
+Fast allocation speed for small blocks comes at the cost of speed for larger blocks. In contrast to a binary buddy allocator, blocks cannot simply be removed, as there are now overlapping smaller blocks present in the free-list and bitmap. These must be removed to avoid allocating the same memory location twice. Consider Figure~\ref{fig:ibuddyallocated2}, which shows the same allocator as in the previous figure, now with an additional 64-byte allocation. We can see once again that the highest-level block has been removed, but now, all the blocks under it have also been cleared from both the free-list and the bitmap. For larger blocks, the speed of allocation scales with the number of smallest-sized blocks needed to fill the requested size. 
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.9\textwidth]{figures/ibuddy_bmap_allocated2}
+    \caption{The state of the free-list and bitmap in an inverse binary buddy allocator after one
+16-byte allocation and one 64-byte allocation.}
+    \label{fig:ibuddyallocated2}
+\end{figure}
+
+
+
+
+\subsubsection{Deallocation in an Inverse Buddy Allocator}
+Deallocation also works differently, but is still similar to the binary buddy allocator. In an inverse buddy allocator, no blocks are explicitly merged; instead, the level at which they are placed back into the free-list indicates the size of the available block. During deallocation, the status of the block's buddy is checked; if it is free, instead of merging, the deallocated block rises up one level. This process repeats until a buddy is no longer free, after which the block is inserted at that layer. As an example, consider Figure~\ref{fig:ibuddydeallocated}, which shows the previous figure, now after deallocating the first 16-byte allocation. The buddy is first checked at the bottom level, then again at the level above that, to finally end up at the third level, where it is inserted and marked in the bitmap as free. The complexity of deallocating single blocks is the same as a binary buddy allocator, but less work needs to be done, as no explicit merging is done, only checks for the blocks' buddies.
+
+\begin{figure}[H]
+    \centering
+    \includesvg[width=0.9\textwidth]{figures/ibuddy_bmap_deallocated}
+    \caption{The state of the free-list and bitmap in an inverse binary buddy allocator after one
+16-byte allocation, one 64-byte allocation, and one 16-byte deallocation.}
+    \label{fig:ibuddydeallocated}
+\end{figure}
+
+Similar to allocation, the deallocation speedup for smaller blocks comes at the cost of larger blocks. When deallocating a large block, all the smaller blocks within that block also need to be inserted back into the free-list and bitmap. Thus, the operation of deallocating a large block is equivalent in cost to individually deallocating each of the smallest-size blocks that make up the larger block. This is more costly than a binary buddy, where larger blocks require the least work, as they merge the fewest number of times.

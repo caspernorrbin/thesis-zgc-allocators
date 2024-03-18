@@ -1,3 +1,17 @@
+Due to the large number of existing allocator designs, one might draw the conclusion that most problems of dynamic memory allocation have already been solved. For most cases, a general purpose allocator designed to be used in any system or environment performs well on average, in terms of response time and fragmentation. However, there often exist areas of improvement depending on how much the use case is narrowed down. For example, a garbage collector using an allocator know more about the objects being allocated than most other users of an allocator would.
+
+One of the earliest memory allocation techniques is the Buddy Allocator, which was conceived by K.C. Knowlton \cite{buddy}. The design of this allocator is very simple and has found applications in various contexts. The Buddy Allocator partitions memory into blocks, each sized as a power of two. Initially, the entire memory is a single block. When allocating, this block is divided recursively into halves until the block size closest fits the allocation size. These new differently sized blocks can then be utilized for subsequent allocations. The two resulting blocks from splitting a block are referred to as ``buddies''. When a block is deallocated and its buddy is also unallocated, the two blocks are combined into a larger block. This merging process continues recursively until the buddy is no longer available.
+
+The simple design of the buddy allocator provides ample room for enhancements. J.L. Peterson and T.A. Norman presented a more generalized version of the buddy allocator \cite{genbuddy}, enabling block sizes that do not necessarily have to be powers of two and allowing for buddies of unequal sizes. Recent advancements have also included making the allocator lock-free \cite{nbbs} and enabling the same block to exist as multiple sizes simultaneously to improve the efficiency of smaller allocations \cite{park2014ibuddy}.
+
+
+
+From the widely used dlmalloc by Doug Lea~\cite{dlmalloc} and newer adaptations of it such as jemalloc and tcmalloc
+
+One of the most widely used allocators is dlmalloc, created by Doug Lea~\cite{dlmalloc}. 
+
+
+Using an allocator inside a garbage collection is not a new concept.
 
 %%% Local Variables:
 %%% mode: latex
