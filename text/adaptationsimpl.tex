@@ -1,12 +1,12 @@
 \subsection{Lazy Allocation Layer}
-As discussed in Section~\ref{sec:lazyexpl}, splitting and merging blocks should be minimized, and a solution to this is to use a lazy layer. The implemented lazy layer contains a free-list of only the smallest few block sizes. These are the most commonly used sizes, so should be prioritized. In addition, storing large blocks in the lazy layer would reserve these large blocks for only that size, which could lead to smaller allocations not being able to be fulfilled. 
+As discussed in Section~\ref{sec:lazyexpl}, splitting and merging blocks should be minimized, and a solution to this is to use a lazy layer. The implemented lazy layer contains a free-list of only the smallest few block sizes. These are the most commonly used sizes, so should be prioritized. In addition, storing large blocks in the lazy layer would reserve these large blocks for only that size, which could lead to smaller allocations not being able to be fulfilled.
 
-Additionally, each block size in the lazy layer has a different threshold before blocks are inserted into the buddy layer. Since most allocations are small, it is logical that that size should have a higher threshold. The thresholds are set according to the distribution of allocation sizes, with the smallest block size having a threshold of $1 000$, with the larger blocks a proportion of this value. ZGC can often deallocate many objects to then allocate many objects of the same size. The lazy layer needs the capacity to support this, which is why the threshold has been set very high. 
+Additionally, each block size in the lazy layer has a different threshold before blocks are inserted into the buddy layer. Since most allocations are small, it is logical that that size should have a higher threshold. The thresholds are set according to the distribution of allocation sizes, with the smallest block size having a threshold of $1 000$, with the larger blocks a proportion of this value. ZGC can often deallocate many objects to then allocate many objects of the same size. The lazy layer needs the capacity to support this, which is why the threshold has been set relatively high.
 
 \subsection{Deallocating Ranges}
 As explained in Section~\ref{sec:freerangeexpl}, the allocator may be completely occupied initially, with the ability to later clear ranges within its memory region to accommodate new allocations. To achieve this, the allocator is full initially and sections within it can be marked as available for the allocator to utilize.
 
-The initial internal state of the full allocator is such that the entire memory is filled with the smallest-sized blocks. This means that all blocks are split initially, which avoids accidentally merging blocks that overlap with occupied memory regions. When deallocating a specific range, the largest blocks that can fit into that range are added in the free-list, and each block and its split children are marked as no longer split. Figure~\ref{fig:deallocrange} shows an example of this, where only the last block is occupied. We can see that the blocks added to the free-list cover the entire free range and are of the maximum possible size.
+The initial internal state of the full allocator is such that the entire memory is filled with the smallest-sized blocks. This means that all blocks are split initially, which avoids accidentally merging blocks that overlap with occupied memory regions. When deallocating a specific range, the largest blocks that can fit into that range are added to the free-list, and each block and its split children are marked as no longer split. Figure~\ref{fig:deallocrange} shows an example of this, where only the last block is occupied. We can see that the blocks added to the free-list cover the entire free range and are of the maximum possible size.
 
 \begin{figure}[H]
     \centering
@@ -18,17 +18,13 @@ The initial internal state of the full allocator is such that the entire memory 
 \subsection{Determining Allocation Sizes}
 As outlined in Section~\ref{sec:findbuddiesexpl}, there are different methods to track allocation sizes. The allocator currently implements all the mentioned alternatives, each with its own set of pros and cons. The most suitable option depends on the specific usage scenario, each having trade-offs between memory usage and processing speed. For the most general use case, the most efficient selection would be the bitmap approach, which is very memory efficient across many allocator configurations.
 
-Storing block levels is efficiently implemented when the total number of levels is 16 or fewer. Having a lower number of levels reduces the required bits for storage, enabling each byte to accommodate two blocks rather than just one.
-
-The implementation storing block levels is optimized if the total number of levels is 16 or fewer. Having a lower number of levels reduces the required bits for storage, enabling each byte to accommodate two blocks rather than just one.
-
+The implementation storing block levels is optimized if the total number of levels is 16 or fewer. Having a lower number of levels reduces the required bits for storage, allowing each byte to accommodate two blocks rather than just one.
 
 For use within ZGC, it is possible to omit the data structures responsible for tracking size and delegate this function to the garbage collector. The collector possesses sufficient data from its live analysis and the object headers to compute the size of each object and allocation. Given that the data is easily accessible, there is no need for the allocator to incur additional overhead, instead making optimal use of existing resources.
 
-\subsection{Alternative buddy designs}
-Exploring ibuddy/binary tree buddy compared to original binary buddy
-
-
 \subsection{Allocator Regions}
-Split allocator into regions
+The maximum allocation size in a small ZGC page is 256 KB, which is a fraction of the page size of 2 MB. Similarly, for a medium page, the largest allocation size is 4 MB, with a page size of 32 MB. In both scenarios, 8 allocations of the maximum size within a page is possible. Therefore, the allocator is not required to handle blocks that exceed $\frac{1}{8}$th of the total memory size. Instead, the allocator can be divided into eight distinct regions, each covering $\frac{1}{8}$th of a page, as explained in Section~\ref{sec:concurrencyexpl}.
 
+Each of these areas operate independently of all others, enabling them to operate concurrently without the need for extra logic. As long as allocations are distributed evenly across the regions, they should be able to run concurrently with each other. This scalability extends to the number of regions, with further allocations having to wait until a prior allocation within a region is completed.
+
+There may be instances where certain regions fill more than others, leading to a decrease in overall potential throughput. When a thread initiates an allocation, it is assigned a specific region. Initially, it checks if any other thread is currently making an allocation in that region; if so, it proceeds to check the subsequent regions. If all regions are already in use, the thread must wait for the allocation process in its initially assigned region to finish. When entering a region, the necessary allocation logic is performed. In case the allocation is unsuccessful, for instance, due to insufficient space in the region, the thread exits that region and retries in the next one. A request for allocation fails when all regions are unable to accommodate the request.

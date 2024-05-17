@@ -1,3 +1,85 @@
+Performance, memory usage, and fragmentation of the allocators are all important measurements that will be evaluated. These aspects are important factors for a memory allocator, with improvements in one aspect often affect the others. Performance is measured based on the time required for allocation and deallocation requests, memory usage refers to the additional memory utilized by the allocator for its operations, and fragmentation refers to the inefficiencies in memory utilization resulting from the allocation strategy.
+
+As previously stated, a significant constraint of this project is the non-integration of the allocator into ZGC, despite this being its intended purpose. This integration would provide the simplest and most intuitive method of testing the allocator. The challenge of not doing this becomes to identify other benchmarks that can indicate the allocator's performance within ZGC.
+
+\subsection{Allocator Configurations}
+The three versions of the buddy allocator: the binary buddy allocator, the binary tree allocator, and the iBuddy allocator; will be tested and compared against each other. They all share the same base configuration of block sizes and regions, with a minimum block size of 16 bytes, a maximum block size of 256 KiB, and 8 total regions.
+
+% To have a baseline to compare with, the reference binary buddy allocator does not implement any of the adaptations mentioned in Section~\ref{sec:adaptations}. The values for the other two can be found in Table~\ref{table:buddyextraparams}.
+
+% \begin{table}[H]
+% \begin{tabular}{|l|l|l|l|}
+% \hline
+% \textbf{Configuration Parameter} & \textbf{Binary buddy} & \textbf{Binary tree buddy} & \textbf{iBuddy} \\ \hline
+% Lazy layer size & 0 & 1000 & 1000 \\ \hline
+% Allocation size storage & Bitmap & None & None \\ \hline
+% \end{tabular}
+% \centering
+% \caption{The testing parameters for the adapted buddy allocators.}
+% \label{table:buddyextraparams}
+% \end{table}
+
+
+
+\subsection{Performance}
+Performance is influenced both by the type of allocator used and by the context of its use. Different allocators perform differently depending on the task, and, as such, their performance varies between different programs. It is impossible to compare all allocators fairly with a single program or to have one program represent the would-be performance in ZGC. Instead, we will focus on more primitive measurements that show how the allocators perform in allocating/deallocating various sizes and numbers of blocks.
+
+\subsubsection{Measuring Performance}
+Observing the time required for a single allocation/deallocation for each block size provides insight into the performance of each allocator. Additionally, timing the allocation of a constant memory size using various block sizes demonstrates how repeated allocation/deallocations perform.
+
+The performance of the allocators varies according to the size of the allocation. Therefore, to cover all possibilities, measurements will be taken for every possible block size allocation ranging from $2^4$ to $2^{18}$. These figures match the potential block sizes in a ZGC small page. In order to minimize noise, the average of $100 000$ allocations will be calculated for each size and each allocator. The duration will be recorded before and after the allocation call. The POSIX function \texttt{clock\_gettime()} is used to measure time, with the \texttt{CLOCK\_MONOTONIC\_RAW} clock.
+
+Another test that highlights the difference between single-speed allocations involves allocating/deallocating a larger memory block. This test will fill a contiguous $2$ MiB memory block for every possible block size ranging from $2^4$ to $2^{18}$, matching with ZGC's allocation sizes and page size. For each allocator and block size, the memory will be filled $10 000$ times. The duration will be recorded using the POSIX function \texttt{clock\_gettime()} with the \texttt{CLOCK\_MONOTONIC\_RAW} clock, starting prior to the initial allocation and ending after the final one.
+
+These tests show different performance aspects of the different allocators for various allocation sizes, which could then be used to draw several conclusions. To estimate the performance of a particular program, one would examine their allocation distribution and compare it with the test results to determine the most suitable allocator for that specific application.
+
+\subsubsection{System Specifications}
+Performance evaluations are performed using two different machines, detailed in Table~\ref{table:performancespecs}. Each memory allocator is compiled using GCC 11.4.0, adhering to the C++14 standard (\texttt{-std=c++14}) and using optimization level two (\texttt{-O2}).
+
+\begin{table}[h]
+    \begin{tabular}{lll}
+        \textbf{Configuration}    & \textbf{Machine A}                                       & \textbf{Machine B}   \\ \hline
+        CPU                       & Intel® Core™ i7-1270P                                    & AMD Opteron™ 6282 SE \\ \hline
+        Sockets / Cores / Threads & 1 / 4P 8E / 16                                           & 2 / 16 / 32          \\ \hline
+        Frequency (Base / Turbo)  & 2.2 GHz / 4.8 GHz                                        & 2.6 GHz / 3.3 GHz    \\ \hline
+        L1 Cache                  & 448 KiB                                                  & 512 KiB              \\ \hline
+        L2 Cache                  & 9 MiB                                                    & 32 MiB               \\ \hline
+        L3 Cache                  & 18 MiB                                                   & 24 MiB               \\ \hline
+        Memory                    & 16 GiB                                                   & 126 GiB              \\ \hline
+        OS                        & \multicolumn{2}{l}{Ubuntu 22.04.4 LTS (Jammy Jellyfish)}                        \\ \hline
+        Kernel                    & 6.5.0-17-generic                                         & 5.15.0-101-generic   \\
+    \end{tabular}
+    \centering
+    \caption{Machines used for performance benchmarks.}
+    \label{table:performancespecs}
+\end{table}
+
+\subsection{Fragmentation} \label{sec:frageval}
+\subsubsection{Internal Fragmentation}
+Internal fragmentation occurs when allocation sizes are rounded to the nearest power of two to align with block sizes, and is identical in all the allocators. This results in unused memory for every allocation that is not a perfect power of two. To quantify this, two counters can be used: one for the requested allocation size and another for the total allocated size. Each allocation operation increments these counters, while deallocation operations decrement them. At any point during program execution, these two can be compared to measure the amount of internal fragmentation. The percentage of internal fragmentation, or wasted memory, can be calculated as
+
+$
+    \text{Internal fragmentation} = \frac{\text{Used memory - Requested memory}}{\text{Used memory}}
+$
+
+\subsubsection{External Fragmentation}
+External fragmentation occurs when allocated blocks are placed in the memory in a way that inhibits larger allocations. Even if the total space available is more than a requested size, there may be no single contiguous block large enough to satisfy that request. The different allocators have different policies of where blocks are placed, so fragmentation will be different between them.
+
+
+\subsubsection{Measuring Fragmentation}
+Fragmentation is highly dependent on a specific pattern of allocation and deallocation. A program that consecutively only allocates powers of two will experience no internal or external fragmentation. However, this scenario is quite unrealistic, as programs typically mix allocations and deallocations across a broad range of sizes. To illustrate potential fragmentation levels in a program, we perform a simulation that uses the modified allocators in a way that creates high fragmentation. This simulation provides a rough estimate of the maximum fragmentation that could arise from typical use of the allocator.
+
+This test uses two modules: one for creating a distribution of allocation sizes and another for producing a sequence of allocations and deallocations based on that distribution. Using these, it is possible to measure both internal and external fragmentation at any point within the sequence of allocations.
+
+The chosen allocation distribution is based on the notion that while most allocations are small, there are a few large allocations, and occasionally, very large ones.
+The allocation distribution is based on the observation that most allocations in Java programs are small. To highlight this, samples are drawn from a Poisson distribution with a mean of $\lambda = 6$. The samples are converted to allocation sizes by using them as exponents with base 2, and a variance of $\pm 50\%$ is applied to the converted samples to introduce spread. TODO
+
+To make the evaluation targeted towards ZGC, the values are aligned to $8$ and any values smaller than $2^4$ or larger than $2^{18}$ are excluded to adhere to the limited allocation size range for small pages. In summary, this results in a distribution centered on $2^6$, with the majority of values clustering near this point, and a gradual but steep decrease in the frequency of higher values.
+
+The sequence of allocations and deallocations is created to introduce significant fragmentation, without using a deliberate pattern. First, a sequence based on the allocation size distribution was generated. Following this sequence, allocations are made until a failure occurs. Subsequently, half of the allocations by size are randomly deallocated, resulting in fragmentation throughout the entire memory. This process is iterated numerous times to ensure extensive fragmentation.
+
+External fragmentation is measured each time an allocation attempt is unsuccessful, as this measures the allocator's ability to manage the previously generated fragmentation. The wide range of sizes often leads to numerous small gaps that prevent larger allocations. Internal fragmentation is measured at this time. The random variance added to block sizes causes this fragmentation, and assessing both types simultaneously provides the most comprehensive data, as this is when the most number of blocks are allocated.
+
 
 %%% Local Variables:
 %%% mode: latex

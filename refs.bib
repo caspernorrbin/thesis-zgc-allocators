@@ -1,180 +1,233 @@
 @article{buddy,
-  title={A fast storage allocator},
-  author={Knowlton, Kenneth C},
-  journal={Communications of the ACM},
-  volume={8},
-  number={10},
-  pages={623--624},
-  year={1965},
-  publisher={ACM New York, NY, USA}
+  title     = {A fast storage allocator},
+  author    = {Knowlton, Kenneth C},
+  journal   = {Communications of the ACM},
+  volume    = {8},
+  number    = {10},
+  pages     = {623--624},
+  year      = {1965},
+  publisher = {ACM New York, NY, USA}
 }
 
-@INPROCEEDINGS{nbbs,
-  author={Marotta, Romolo and Ianni, Mauro and Scarselli, Andrea and Pellegrini, Alessandro and Quaglia, Francesco},
-  booktitle={2018 IEEE International Conference on Cluster Computing (CLUSTER)}, 
-  title={A Non-blocking Buddy System for Scalable Memory Allocation on Multi-core Machines}, 
-  year={2018},
-  volume={},
-  number={},
-  pages={164-165},
-  keywords={Resource management;Linux;Instruction sets;Memory management;Scalability;Conferences;Kernel;non blocking algorithms;buddy system;shared memory synchronization;memory allocator},
-  doi={10.1109/CLUSTER.2018.00034}}
+@inproceedings{nbbs,
+  author    = {Marotta, Romolo and Ianni, Mauro and Scarselli, Andrea and Pellegrini, Alessandro and Quaglia, Francesco},
+  booktitle = {2018 IEEE International Conference on Cluster Computing (CLUSTER)},
+  title     = {A Non-blocking Buddy System for Scalable Memory Allocation on Multi-core Machines},
+  year      = {2018},
+  volume    = {},
+  number    = {},
+  pages     = {164-165},
+  keywords  = {Resource management;Linux;Instruction sets;Memory management;Scalability;Conferences;Kernel;non blocking algorithms;buddy system;shared memory synchronization;memory allocator},
+  doi       = {10.1109/CLUSTER.2018.00034}
+}
 
 @article{genbuddy,
-author = {Peterson, James L. and Norman, Theodore A.},
-title = {Buddy systems},
-year = {1977},
-issue_date = {June 1977},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-volume = {20},
-number = {6},
-issn = {0001-0782},
-url = {https://doi.org/10.1145/359605.359626},
-doi = {10.1145/359605.359626},
-abstract = {Two algorithms are presented for implementing any of a class of buddy systems for dynamic storage allocation. Each buddy system corresponds to a set of recurrence relations which relate the block sizes provided to each other. Analyses of the internal fragmentation of the binary buddy system, the Fibonacci buddy system, and the weighted buddy system are given. Comparative simulation results are also presented for internal, external, and total fragmentation.},
-journal = {Commun. ACM},
-month = {jun},
-pages = {421–431},
-numpages = {11},
-keywords = {Fibonacci buddy system, buddy system, dynamic storage allocation, fragmentation, weighted buddy system}
+  author     = {Peterson, James L. and Norman, Theodore A.},
+  title      = {Buddy systems},
+  year       = {1977},
+  issue_date = {June 1977},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {20},
+  number     = {6},
+  issn       = {0001-0782},
+  url        = {https://doi.org/10.1145/359605.359626},
+  doi        = {10.1145/359605.359626},
+  abstract   = {Two algorithms are presented for implementing any of a class of buddy systems for dynamic storage allocation. Each buddy system corresponds to a set of recurrence relations which relate the block sizes provided to each other. Analyses of the internal fragmentation of the binary buddy system, the Fibonacci buddy system, and the weighted buddy system are given. Comparative simulation results are also presented for internal, external, and total fragmentation.},
+  journal    = {Commun. ACM},
+  month      = {jun},
+  pages      = {421–431},
+  numpages   = {11},
+  keywords   = {Fibonacci buddy system, buddy system, dynamic storage allocation, fragmentation, weighted buddy system}
 }
 
 @article{park2014ibuddy,
-  title={iBuddy: Inverse buddy for enhancing memory allocation/deallocation performance on multi-core systems},
-  author={Park, Heekwon and Choi, Jongmoo and Lee, Donghee and Noh, Sam H},
-  journal={IEEE Transactions on Computers},
-  volume={64},
-  number={3},
-  pages={720--732},
-  year={2014},
-  publisher={IEEE}
+  title     = {iBuddy: Inverse buddy for enhancing memory allocation/deallocation performance on multi-core systems},
+  author    = {Park, Heekwon and Choi, Jongmoo and Lee, Donghee and Noh, Sam H},
+  journal   = {IEEE Transactions on Computers},
+  volume    = {64},
+  number    = {3},
+  pages     = {720--732},
+  year      = {2014},
+  publisher = {IEEE}
 }
 
-@Electronic{openjdk,
-  author = {Oracle},
-  title  = {{OpenJDK}},
+@electronic{btbuddy,
+  author = {Restioson},
+  title  = {Buddy Allocator Workshop},
+  url    = {https://github.com/Restioson/buddy-allocator-workshop},
   year   = 2024,
-  url    = {https://openjdk.org/},
-  organization = {Oracle},
-  note  = "Accessed 2024-03-08"
+  note   = {Accessed 2024-04-21}
 }
 
-@Electronic{zgc,
+@electronic{openjdk,
+  author       = {Oracle},
+  title        = {{OpenJDK}},
+  year         = 2024,
+  url          = {https://openjdk.org/},
+  organization = {Oracle},
+  note         = {Accessed 2024-03-08}
+}
+
+@electronic{zgc,
   author = {Oracle},
   title  = {{The Z Garbage Collector}},
   year   = 2024,
   url    = {https://wiki.openjdk.org/display/zgc/Main},
-  note  = "Accessed 2024-05-15"
+  note   = {Accessed 2024-05-15}
 }
 
-@InProceedings{TLSF,
-  author={Masmano, M. and Ripoll, I. and Crespo, A. and Real, J.},
-  booktitle={Proceedings. 16th Euromicro Conference on Real-Time Systems, 2004. ECRTS 2004.}, 
-  title={{TLSF}: a new dynamic memory allocator for real-time systems}, 
-  year={2004},
-  pages={79-88},
-  doi={10.1109/EMRTS.2004.1311009}
+@inproceedings{TLSF,
+  author    = {Masmano, M. and Ripoll, I. and Crespo, A. and Real, J.},
+  booktitle = {Proceedings. 16th Euromicro Conference on Real-Time Systems, 2004. ECRTS 2004.},
+  title     = {{TLSF}: a new dynamic memory allocator for real-time systems},
+  year      = {2004},
+  pages     = {79-88},
+  doi       = {10.1109/EMRTS.2004.1311009}
 }
 
-@Electronic{hotspot,
-  author = {Oracle},
-  title  = {{The Java HotSpot Performance Engine Architecture}},
-  year   = 2024,
-  url    = {https://www.oracle.com/java/technologies/whitepaper.html},
+@electronic{hotspot,
+  author       = {Oracle},
+  title        = {{The Java HotSpot Performance Engine Architecture}},
+  year         = 2024,
+  url          = {https://www.oracle.com/java/technologies/whitepaper.html},
   organization = {Oracle},
-  note  = "Accessed 2024-03-08"
+  note         = {Accessed 2024-03-08}
 }
 
-@Electronic{jvm,
-  author = {Oracle},
-  title  = {{Java Virtual Machine Guide}},
-  year   = 2023,
-  url    = {https://docs.oracle.com/en/java/javase/21/vm/java-virtual-machine-technology-overview.html},
+@electronic{jvm,
+  author       = {Oracle},
+  title        = {{Java Virtual Machine Guide}},
+  year         = 2023,
+  url          = {https://docs.oracle.com/en/java/javase/21/vm/java-virtual-machine-technology-overview.html},
   organization = {Oracle},
-  note  = "Accessed 2024-03-08"
+  note         = {Accessed 2024-03-08}
 }
 
-@Electronic{jdk:tag2232,
-  author = {Oracle},
-  title  = {{OpenJDK Release 22.32}},
-  year   = 2024,
-  url    = {https://github.com/openjdk/jdk/releases/tag/jdk-22%2B32},
+@electronic{jdk:tag2232,
+  author       = {Oracle},
+  title        = {{OpenJDK Release 22.32}},
+  year         = 2024,
+  url          = {https://github.com/openjdk/jdk/releases/tag/jdk-22%2B32},
   organization = {Oracle},
-  note  = "Accessed 2024-05-07"
+  note         = {Accessed 2024-05-07}
 }
 
 @book{gchandbook,
-  title     = "The garbage collection handbook",
-  author    = "Jones, Richard and Hosking, Antony and Moss, Eliot",
-  publisher = "Chapman \& Hall/CRC",
-  edition   =  2,
-  year      =  2023,
+  title     = {The garbage collection handbook},
+  author    = {Jones, Richard and Hosking, Antony and Moss, Eliot},
+  publisher = {Chapman \& Hall/CRC},
+  edition   = 2,
+  year      = 2023
 }
 
 @inproceedings{zpage_size_table,
-  author = {Yang, Albert Mingkun and \"{O}sterlund, Erik and Wrigstad, Tobias},
-  title = {Improving program locality in the GC using hotness},
-  year = {2020},
-  isbn = {9781450376136},
+  author    = {Yang, Albert Mingkun and \"{O}sterlund, Erik and Wrigstad, Tobias},
+  title     = {Improving program locality in the GC using hotness},
+  year      = {2020},
+  isbn      = {9781450376136},
   publisher = {Association for Computing Machinery},
-  address = {New York, NY, USA},
-  url = {https://doi.org/10.1145/3385412.3385977},
-  doi = {10.1145/3385412.3385977},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/3385412.3385977},
+  doi       = {10.1145/3385412.3385977},
   booktitle = {Proceedings of the 41st ACM SIGPLAN Conference on Programming Language Design and Implementation},
-  pages = {301–313},
-  numpages = {13},
-  keywords = {GC, cache optimisation, data locality, prefetching},
-  location = {London, UK},
-  series = {PLDI 2020}
+  pages     = {301–313},
+  numpages  = {13},
+  keywords  = {GC, cache optimisation, data locality, prefetching},
+  location  = {London, UK},
+  series    = {PLDI 2020}
 }
 
 @article{zgc:deep_dive,
-  author = {Yang, Albert Mingkun and Wrigstad, Tobias},
-  title = {Deep Dive into ZGC: A Modern Garbage Collector in OpenJDK},
-  year = {2022},
+  author     = {Yang, Albert Mingkun and Wrigstad, Tobias},
+  title      = {Deep Dive into ZGC: A Modern Garbage Collector in OpenJDK},
+  year       = {2022},
   issue_date = {December 2022},
-  publisher = {Association for Computing Machinery},
-  address = {New York, NY, USA},
-  volume = {44},
-  number = {4},
-  issn = {0164-0925},
-  url = {https://doi.org/10.1145/3538532},
-  doi = {10.1145/3538532},
-  journal = {ACM Trans. Program. Lang. Syst.},
-  month = {sep},
-  articleno = {22},
-  numpages = {34},
-  keywords = {model checking, SPIN, ZGC, Garbage collection}
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {44},
+  number     = {4},
+  issn       = {0164-0925},
+  url        = {https://doi.org/10.1145/3538532},
+  doi        = {10.1145/3538532},
+  journal    = {ACM Trans. Program. Lang. Syst.},
+  month      = {sep},
+  articleno  = {22},
+  numpages   = {34},
+  keywords   = {model checking, SPIN, ZGC, Garbage collection}
+}
+
+@book{linuxbuddy,
+  title     = {Understanding the Linux virtual memory manager},
+  author    = {Gorman, Mel},
+  volume    = {352},
+  year      = {2004},
+  publisher = {Prentice Hall Upper Saddle River}
+}
+
+@inproceedings{jemalloc,
+  title     = {A scalable concurrent malloc (3) implementation for {FreeBSD}},
+  author    = {Evans, Jason},
+  booktitle = {Proc. of the bsdcan conference, ottawa, canada},
+  year      = {2006}
+}
+
+@electronic{cms,
+  author       = {Oracle},
+  title        = {{Concurrent Mark Sweep (CMS) Collector}},
+  year         = 2014,
+  url          = {https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/cms.html},
+  organization = {Oracle},
+  note         = {Accessed 2024-05-10}
+}
+
+@article{lazylayer,
+  title     = {A lazy buddy system bounded by two coalescing delays},
+  author    = {Barkley, R and Lee, T},
+  journal   = {ACM SIGOPS Operating Systems Review},
+  volume    = {23},
+  number    = {5},
+  pages     = {167--176},
+  year      = {1989},
+  publisher = {ACM New York, NY, USA}
+}
+
+@electronic{liliput,
+  author       = {Oracle},
+  title        = {{Project Lilliput}},
+  year         = 2024,
+  url          = {https://wiki.openjdk.org/display/lilliput/Main},
+  organization = {Oracle},
+  note         = {Accessed 2024-05-03}
 }
 
 %%%% Exempel på entryn från DiVA.
 %%%% Här är url-fältet tillagt, "UX" i titeln lagt inom {} för att det inte ska bli lowercase, och space före kolon som separerar titel från undertitel borttaget i titeln.
 @mastersthesis{Brane973772,
-   author = {Br{\"a}ne, Arvid},
-   institution = {Umeå University, Department of Applied Physics and Electronics},
-   pages = {65},
-   school = {Umeå University, Department of Applied Physics and Electronics},
-   title = {User Experience Design for Children: Developing and Testing a {UX} Framework},
-   keywords = {user experience (UX), user interface (UI), interaction design (IxD), graphical user interface (GUI), design, usability, kids, children, minors, teenagers, childhood, guidelines, framework, child centered design (CCD), tablets, smartphones, media, Lego, Star Wars, North Kingdom},
-   year = {2016},
-   url = {http://urn.kb.se/resolve?urn=urn:nbn:se:umu:diva-125935}
+  author      = {Br{\"a}ne, Arvid},
+  institution = {Umeå University, Department of Applied Physics and Electronics},
+  pages       = {65},
+  school      = {Umeå University, Department of Applied Physics and Electronics},
+  title       = {User Experience Design for Children: Developing and Testing a {UX} Framework},
+  keywords    = {user experience (UX), user interface (UI), interaction design (IxD), graphical user interface (GUI), design, usability, kids, children, minors, teenagers, childhood, guidelines, framework, child centered design (CCD), tablets, smartphones, media, Lego, Star Wars, North Kingdom},
+  year        = {2016},
+  url         = {http://urn.kb.se/resolve?urn=urn:nbn:se:umu:diva-125935}
 }
 
 %%%% Här är entrytypen ändrad från misc till techreport, fältet "series" ändrat till "type", url-fältet tillagt,
 %%%% och "DreamScape" i titeln lagd inom {} för att bevara CamelCaps.
 %%%% Av någon anledning lägger DiVA in flera "school"-fält. Ta bort de extra om varningarna stör.
 @techreport{Alstergren1439802,
-   author = {Alstergren, Iza and Andersson, Andreas and Hedman, Lovisa and Maric, Daniela},
-   institution = {Uppsala University, Department of Information Technology},
-   pages = {41},
-   school = {Uppsala University, Department of Information Technology},
-   school = {Uppsala University, Department of Information Technology},
-   school = {Uppsala University, Department of Information Technology},
-   school = {Uppsala University, Department of Information Technology},
-   title = {{DreamScape}, a Platform for Creating, Sharing and Listening to Interactive Stories},
-   type = {Självständigt arbete i informationsteknologi},
-   number = {2020-007},
-   year = {2020},
-   url = {http://urn.kb.se/resolve?urn=urn:nbn:se:uu:diva-413015}
+  author      = {Alstergren, Iza and Andersson, Andreas and Hedman, Lovisa and Maric, Daniela},
+  institution = {Uppsala University, Department of Information Technology},
+  pages       = {41},
+  school      = {Uppsala University, Department of Information Technology},
+  school      = {Uppsala University, Department of Information Technology},
+  school      = {Uppsala University, Department of Information Technology},
+  school      = {Uppsala University, Department of Information Technology},
+  title       = {{DreamScape}, a Platform for Creating, Sharing and Listening to Interactive Stories},
+  type        = {Självständigt arbete i informationsteknologi},
+  number      = {2020-007},
+  year        = {2020},
+  url         = {http://urn.kb.se/resolve?urn=urn:nbn:se:uu:diva-413015}
 }

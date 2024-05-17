@@ -1,4 +1,142 @@
 
+\subsection{Page Overhead}
+The design of the buddy allocator requires the storage of additional metadata away from the data on the page. This metadata, which relates to the status of possible blocks, incurs a fixed overhead for each page allocated, rather than increasing with each allocation. Furthermore, the size of the metadata is only influenced by the number of blocks rather than their size. Consequently, using larger block sizes leads to a minimal overhead percentage, whereas smaller block sizes result in significantly higher proportional overhead.
+
+The basic binary buddy allocator stands out as the most efficient in terms of memory usage, requiring the least data. Recall that the state of each potential block must be stored. Although this information can be represented by a single bit, it is possible to compress this even further. Given that this data is used only during deallocation, the state of the current block is always known. Consequently, the states of two buddy blocks can be merged into one bit using XOR operations, effectively halving the memory requirement. In the ZGC configuration, this results in a total overhead of $16 KiB$ or $0.78\%$.
+
+The ibuddy allocator is very similar and also requires only the storage of each block's state. Nevertheless, the same optimizations are not possible due to the inverse nature of the allocator. Each block needs to be able to set and read its state individually, as operations can be executed on multiple blocks at once. In the ZGC configuration, this leads to an overall overhead of $32 KiB$ or $1.56\%$.
+
+In contrast, the binary tree allocator requires additional information to be stored. Storing only the state of each block is insufficient, as each block also maintains a record of the highest level accessible beneath it. In a primitive implementation, a single byte per block could hold this data, resulting in significant overhead and proportional waste. As described in Section~\ref{sec:adaptationsmetadata}, significant optimizations can be applied to the lower layers. These enhancements, when applied to compress the lower layers, result in a total overhead of $57 KiB$, or $2.7\%$.
+
+%store sizes
+\vspace{-0.2cm}
+\subsection{Performance}
+The results of the single allocation benchmark are presented in Figure~\ref{fig:allocbenchmark}. The results for machine A can be found in Figure~\ref{fig:allocA}, while those for machine B can be found in Figure~\ref{fig:allocB}. We can observe that the performance of the allocators is similar across both machines, differing by a constant speed factor.
+
+
+The figures also show the distinct characteristics of each allocator. Both the binary buddy and binary tree allocators demonstrate quicker allocation of larger blocks, with the latter showing superior performance for smaller block sizes. However, the iBuddy allocator is faster at allocating smaller blocks than the other two, but this comes with a considerably reduced speed for larger blocks. Additionally, utilizing the lazy layer results in a significant improvement in performance across all block sizes, with the greatest impact at smaller sizes.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \includesvg[width=1.02\linewidth]{figures/alloc_laptop.svg}
+        \caption{Allocation benchmark results from machine A.}
+        \label{fig:allocA}
+    \end{subfigure}
+    \vspace{-0.5cm}
+    \rule{\textwidth}{0.1pt}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \includesvg[width=1.02\linewidth]{figures/alloc_server.svg}
+        \caption{Allocation benchmark results from machine B.}
+        \label{fig:allocB}
+    \end{subfigure}
+    \caption{Performance of individual allocations across various block sizes and allocators. The benchmark is run on both machines, and each bar displays the mean results from 100 000 iterations.}
+    \label{fig:allocbenchmark}
+\end{figure}
+
+% \newpage
+% \vspace{-0.5cm}
+The results of the single deallocation benchmark are presented in Figure~\ref{fig:deallocbenchmark}. The results for machine A can be found in Figure~\ref{fig:deallocA}, while those for machine B can be found in Figure~\ref{fig:deallocB}. We can again observe that the performance of the allocators is similar across both machines, also differing by a constant speed factor.
+
+The figures show the same distinct characteristics of the allocators. Both the binary buddy and binary tree allocators again demonstrate quicker deallocation of larger blocks, with the latter showing superior performance, for smaller block sizes, although less than when allocating. The iBuddy allocator is again faster at deallocating smaller blocks than the other two, but this comes with a considerably reduced speed for larger blocks. Additionally, utilizing the lazy layer results in a significant improvement in performance across all block sizes, with the greatest impact at smaller sizes.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \includesvg[width=1.02\linewidth]{figures/dealloc_laptop.svg}
+        \caption{Deallocation benchmark results from machine A}
+        \label{fig:deallocA}
+    \end{subfigure}
+    \rule{\textwidth}{0.1pt}
+    \begin{subfigure}{\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \includesvg[width=1.02\linewidth]{figures/dealloc_server.svg}
+        \caption{Deallocation benchmark results from machine B}
+        \label{fig:deallocB}
+    \end{subfigure}
+    \caption{Performance of individual allocations across various block sizes and allocators. The benchmark is run on both machines, and each bar displays the mean results from 100 000 iterations.}
+    \label{fig:deallocbenchmark}
+\end{figure}
+
+% \vspace{-0.5cm}
+The results of the page-fill benchmark are presented in Figure~\ref{fig:allocpage}. The results for machine A can be found in Figure~\ref{fig:allocpageA}, while those for machine B can be found in Figure~\ref{fig:allocpageB}. Again, we can see that the performance of the allocators is similar across both machines, still differing by a constant speed factor.
+
+The results illustrate how the characteristics of each allocator manifest when making multiple repeat allocations. The binary buddy and binary tree allocators scale linearly with block size, as a result of their improved allocation speed for larger blocks. The binary tree allocator is faster, which can be seen by it being lower in the graph than the binary buddy allocator. Conversely, the iBuddy allocator exhibits inverse scaling, being faster for small blocks than the other two but then flattening out for larger block size.
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}{0.495\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \includesvg[width=1\linewidth]{figures/page_laptop.svg}
+        \caption{Allocation results from machine A}
+        \label{fig:allocpageA}
+    \end{subfigure}
+    \begin{subfigure}{0.495\textwidth}
+        \centering
+        \captionsetup{justification=centering}
+        \includesvg[width=1\linewidth]{figures/page_server.svg}
+        \caption{Allocation results from machine B}
+        \label{fig:allocpageB}
+    \end{subfigure}
+    \caption{Time taken to allocate 2 MiB across various block sizes and allocator versions. The benchmark is run on both machines, and each point displays the mean results from 1 000 iterations.}
+    \label{fig:allocpage}
+\end{figure}
+
+\FloatBarrier
+\subsection{Fragmentation}
+\subsubsection{Internal Fragmentation}
+Internal fragmentation remains consistent in all versions of allocators, as they round block sizes equally and use the same allocation pattern. Table~\ref{table:fraginternal} presents measures that quantify the internal fragmentation experienced by the allocators. Although fragmentation is considerable, the standard deviation is low, indicating consistent fragmentation with low spread. The chosen allocation pattern greatly influences fragmentation levels, and the selected pattern having the highest variance causes nearly all allocations to require rounding up.
+
+\begin{table}[h]
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Measure}    & \textbf{Value} \\ \hline
+        Minimum:            & 24.4\%         \\ \hline
+        Maximum:            & 40.9\%         \\ \hline
+        Mean:               & 32.0\%         \\ \hline
+        Median:             & 32.3\%         \\ \hline
+        Standard Deviation: & 2.1\%          \\ \hline
+    \end{tabular}
+    \centering
+    \caption{Measurements of internal fragmentation based on 1,000 observations. All allocator versions experience the same internal fragmentation.}
+    \label{table:fraginternal}
+\end{table}
+
+\subsubsection{External Fragmentation}
+External fragmentation manifests itself differently in the allocator versions due to their different strategies for placing allocated blocks. Figure~\ref{fig:fragextbinary} illustrates the distribution of free blocks in terms of number and total size for the binary buddy allocator, revealing the state of fragmentation and possible allocation sizes. The largest quantity of blocks is around $2^7$, yet they only constitute a minor portion of the overall size of the free blocks. Instead, most of the space is occupied by blocks around $2^{14}$, suggesting that allocations of this size are possible and that most unsuccessful allocations exceed this size.
+
+\begin{figure}[h]
+    \centering
+    \includesvg[width=1\textwidth]{figures/frag_binary.svg}
+    \caption{Mean external fragmentation over 1 000 observations of the binary buddy allocator when allocating and deallocating randomly.}
+    \label{fig:fragextbinary}
+\end{figure}
+
+Figure~\ref{fig:fragextbt} illustrates the distribution of free blocks in terms of number and total size for the binary tree allocator, revealing the state of fragmentation and possible allocation sizes. It is similar to the binary buddy allocator, with the largest number of blocks around $2^7$. Although the binary tree allocator has a greater number of smaller blocks, these blocks make up only a small fraction of the total free space. Most of the space is occupied by blocks around $2^{13}$, suggesting that allocations of this size are possible and that most unsuccessful allocations exceed this size. This is lower than the binary buddy allocator, and the total free size is less, suggesting that the binary tree allocator is more efficient in using memory.
+
+\begin{figure}[h]
+    \centering
+    \includesvg[width=1\textwidth]{figures/frag_bt.svg}
+    \caption{Mean external fragmentation over 1 000 observations of the binary tree allocator when allocating and deallocating randomly.}
+    \label{fig:fragextbt}
+\end{figure}
+
+Figure~\ref{fig:fragextibuddy} illustrates the distribution of free blocks in terms of number and total size for the iBuddy allocator, revealing the state of fragmentation and possible allocation sizes. This allocator stands out from the others due to its aggressive policy of splitting larger blocks. The most common size of free blocks is $2^6$, which also constitutes a substantial portion of the total free space. The largest total space is found around $2^{13}$, although it is more evenly distributed between sizes. The concentration at $2^6$ results from the fact that most allocations exceed this size, leading to continuous splitting of blocks until they reach this size. Furthermore, the overall free space is greater than that of the other two allocators, suggesting that it is less efficient at utilizing memory.
+
+\begin{figure}[h]
+    \centering
+    \includesvg[width=1\textwidth]{figures/frag_ibuddy.svg}
+    \caption{Mean external fragmentation over 1 000 observations of the iBuddy allocator when allocating and deallocating randomly.}
+    \label{fig:fragextibuddy}
+\end{figure}
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "main"

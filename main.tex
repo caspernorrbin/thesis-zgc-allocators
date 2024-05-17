@@ -20,6 +20,14 @@
 \usepackage{caption}
 \usepackage{mwe}
 
+% My packages
+\usepackage{tabularx}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{amsmath}
+\usepackage{placeins}
+
 % För att göra ett index behövs
 %  - \usepackage{makeidx}
 %  - \makeindex i "preamble", dvs före \begin{document}
@@ -102,10 +110,12 @@
 \label{sec:introduction}
 \input{text/introduction}
 
+\newpage
 \subsection{Purpose and Goals}
 \label{sec:purpose}
 \input{text/purpose}
 
+\vspace{-0.4cm}
 \subsection{Delimitations}
 \label{sec:delimitations}
 \input{text/delimitations}
@@ -114,12 +124,16 @@
 \label{sec:individual_contrubitons}
 \input{text/individual_contributions}
 
+\subsection{Outline}
+\label{sec:outline}
+\input{text/outline}
+
 \paragraph{Acknowledgement}
 \input{text/acknowledgement}
 
 \newpage
 \section{Background}
-\label{sec:backgrond}
+\label{sec:background}
 \input{text/background}
 
 \subsection{Memory Management}
@@ -152,12 +166,19 @@
 \input{text/zpage}
 
 \section{Related work}
+\label{sec:relatedwork}
 \input{text/related-work}
 
 \newpage
 \section{Binary Buddy Allocator}
 \label{sec:buddy}
 \input{text/buddy}
+\FloatBarrier
+
+% \newpage
+\section{Method}
+\label{sec:method}
+\input{text/method}
 
 \newpage
 \section{Improved Buddy Allocators}
@@ -165,26 +186,20 @@
 \input{text/buddyadditions}
 
 \newpage
-\section{Adapting the Buddy Allocator}
+\section{Adapting the Buddy Allocator for use Within ZGC}
 \label{sec:adaptations}
 \input{text/adaptations}
 
-\section{Implementing Allocator Adaptations}
-\label{sec:adaptationsimpl}
-\input{text/adaptationsimpl}
+% \section{Implementing Allocator Adaptations}
+% \label{sec:adaptationsimpl}
+% \input{text/adaptationsimpl}
 
-\section{Theory}
-\label{sec:theory}
-\input{text/theory}
-
-\section{Method}
-\label{sec:method}
-\input{text/method}
-
+\newpage
 \section{Evaluation Methodology}
 \label{sec:evaluation}
 \input{text/evaluation}
 
+\newpage
 \section{Results}
 \label{sec:results}
 \input{text/results}
@@ -192,6 +207,10 @@
 \section{Discussion}
 \label{sec:discussion}
 \input{text/discussion}
+
+\section{Future Work}
+\label{sec:futurework}
+\input{text/futurework}
 
 \section{Conclusions}
 \label{sec:conclusions}
