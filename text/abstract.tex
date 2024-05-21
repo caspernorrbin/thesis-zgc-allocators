@@ -1,3 +1,10 @@
+In the current software development environment, Java continues to be one of the major languages, powering numerous applications. Central to Java's effectiveness is the Java Virtual Machine (JVM), where HotSpot stands out as a key implementation. Within HotSpot, garbage collection (GC) is critical for efficient memory management, where the Z Garbage Collector (ZGC) is designed to manage it with minimal latency and high throughput. \\
+
+ZGC primarily uses bump-pointer allocation, which, while fast, can lead to fragmentation issues. An alternative allocation strategy involves using free-lists to dynamically manage memory blocks of various sizes. This thesis explores the adaptation and evaluation of buddy allocators for potential integration within ZGC, with the aim of enhancing memory allocation efficiency and minimizing fragmentation. \\
+
+The work investigates the binary buddy allocator, binary tree buddy allocator, and inverse buddy allocator, assessing their performance and suitability for ZGC. Although not integrated into ZGC, these exploratory modifications and evaluations provide insight into their behavior and performance in a GC context. The study reveals that while buddy allocators offer promising solutions to fragmentation, they require careful adaptation to handle the unique demands of ZGC. \\
+
+The conclusions drawn from this research highlight the potential of free-list-based allocators to improve memory management in Java applications. These advances could reduce GC-induced latency and enhance the scalability of Java-based systems, addressing the growing demands of modern software applications.
 
 %%% Local Variables:
 %%% mode: latex
