@@ -1,89 +1,87 @@
 The concept of a buddy memory allocator was first introduced by Knowlton~\cite{buddyog}. The core idea of the buddy allocator involves dividing memory into blocks and pairing them as ``buddies''. These buddy pairs are split when allocating memory and merged when deallocating memory to allow allocations of different sizes. The simple design of the buddy allocator makes it attractive for various applications. For example, the Linux kernel implements a modified binary buddy allocator to manage physical memory~\cite{linuxbuddy}, and \texttt{jemalloc} adopts a buddy allocator for one of its memory allocation methods~\cite{jemalloc}.
 
 \subsection{Allocation and Deallocation}
-The binary buddy allocator is the original and most basic type of buddy allocator. It partitions memory into blocks with sizes that are powers of 2. A free list of available blocks of different sizes is maintained to keep track of the free blocks. Initially, all memory is one large block. Figure~\ref{fig:buddystart} shows the initial state of a binary buddy allocator with a total memory of 128 bytes. It can be seen that the entire memory is contained within a single block, which is also included in the free list.
+The binary buddy allocator is the original and most basic type of buddy allocator. It partitions memory into blocks with sizes that are powers of 2. A free list of available blocks of different sizes is maintained to track free blocks. Initially, all memory is one large block. Figure~\ref{fig:buddystart} shows the initial state of a binary buddy allocator with a total memory of 128 bytes. It can be seen that the entire memory is contained within a single block, which is also included in the free list.
 
 \begin{figure}[h]
-    \centering
-    \includesvg[width=0.65\textwidth]{figures/bbuddy_initial.svg}
-    \caption{The initial state of the free-list and memory in a binary buddy allocator.}
-    \label{fig:buddystart}
+  \centering
+  \includesvg[width=0.65\textwidth]{figures/bbuddy_initial.svg}
+  \caption{The initial state of the free-list and memory in a binary buddy allocator.}
+  \label{fig:buddystart}
 \end{figure}
 
-When requesting memory, a block of the smallest size that can accommodate the requested memory will be returned. If there are no blocks of that size available, larger blocks will be recursively split into two until a block of the correct size is available. The split blocks are then added to the free list for future allocations. An algorithmic explanation of this process can be found in Algorithm~\ref{alg:bbuddy_alloc}.
+When requesting memory, a block of the smallest size that can accommodate the requested memory is returned. If no blocks of that size are available, larger blocks are recursively split into two until a block of the correct size is available. The split blocks are then added to the free list for future allocations. An algorithmic explanation of this process can be found in Algorithm~\ref{alg:bbuddy_alloc}.
 
 \begin{algorithm}[h]
-    \caption{Binary buddy allocation algorithm}
-    \label{alg:bbuddy_alloc}
-    \begin{algorithmic}[1]
-        \Statex \textbf{Procedure} Allocate(size)
-        \State $level \gets \text{smallest power of 2} \geq size$
+  \caption{Binary buddy allocation algorithm}
+  \label{alg:bbuddy_alloc}
+  \begin{algorithmic}[1]
+    \Statex \textbf{Procedure} Allocate(size)
+    \State $level \gets \text{smallest power of 2} \geq size$
 
-        \Statex \textbf{Find a suitable block}
-        \State $block \gets \text{no\_block}$
-        \For{$i \gets level$ to \text{max\_level}}
-        \If{\text{free list for level $i$ is not empty}}
-        \State $block \gets \text{remove first block from free list of level } i$
-        \State \textbf{break}
-        \EndIf
-        \EndFor
+    \Statex \textbf{Find a suitable block}
+    \State $block \gets \text{no\_block}$
+    \For{$i \gets level$ to \text{max\_level}}
+    \If{\text{free list for level $i$ is not empty}}
+    \State $block \gets \text{remove first block from free list of level } i$
+    \State \textbf{break}
+    \EndIf
+    \EndFor
 
-        \If{$block = \text{no\_block}$}
-        \State \Return \text{allocation\_failed}
-        \EndIf
+    \If{$block = \text{no\_block}$}
+    \State \Return \text{allocation\_failed}
+    \EndIf
 
-        \Statex \textbf{Split the block if necessary}
-        \While{$\text{level of } block > level$}
-        \State $block, buddy \gets \text{split } block \text{ into two buddy blocks}$
-        \State \text{add } $buddy$ \text{ to its corresponding free list}
-        \EndWhile
+    \Statex \textbf{Split the block if necessary}
+    \While{$\text{level of } block > level$}
+    \State $block, buddy \gets \text{split } block \text{ into two buddy blocks}$
+    \State \text{add } $buddy$ \text{ to its corresponding free list}
+    \EndWhile
 
-        \State \Return $block$
-    \end{algorithmic}
+    \State \Return $block$
+  \end{algorithmic}
 \end{algorithm}
 
 As an example, consider Figure~\ref{fig:buddysplit} which shows the resulting state of the previous figure after requesting 16 bytes of memory. The initial 128-byte block has been split multiple times to fulfill the request, with the leftmost block being returned and the addition of various block sizes to the free list.
 
 \begin{figure}[h]
-    \centering
-    \includesvg[width=0.65\textwidth]{figures/bbuddy_allocated.svg}
-    \caption{The state of the free-list and memory in a binary buddy allocator after one 16-byte allocation.}
-    \label{fig:buddysplit}
+  \centering
+  \includesvg[width=0.65\textwidth]{figures/bbuddy_allocated.svg}
+  \caption{The state of the free-list and memory in a binary buddy allocator after one 16-byte allocation.}
+  \label{fig:buddysplit}
 \end{figure}
 
-\newpage
-Deallocation is the reverse process of allocation. When a block is deallocated, it is merged with its buddy if the buddy is also deallocated. Merging creates a new, larger block. Afterward, the original block and its buddy are removed from the free list, and the new, larger block is inserted. The larger block checks the status of its buddy and the merging process continues recursively until merging is no longer possible. An algorithmic explanation of this process can be found in Algorithm~\ref{alg:bbuddy_dealloc}. To demonstrate this process, consider the situation where the 16-byte block in Figure~\ref{fig:buddysplit} is deallocated. In this scenario, the block would go through a recursive merging process with its buddies until it reaches the initial state shown in Figure~\ref{fig:buddystart}.
+Deallocation is the reverse process of allocation. When a block is deallocated, it is merged with its buddy if the buddy is also deallocated. Merging creates a new, larger block. Afterward, the original block and its buddy are removed from the free list, and the new, larger block is inserted. The larger block then checks the status of its buddy and the merging process continues recursively until merging is no longer possible. An algorithmic explanation of this process can be found in Algorithm~\ref{alg:bbuddy_dealloc}. To demonstrate this process, consider the situation where the 16-byte block in Figure~\ref{fig:buddysplit} is deallocated. In this scenario, the block would go through a recursive merging process with its buddies until it reaches the initial state shown in Figure~\ref{fig:buddystart}.
 
 \begin{algorithm}[h]
-    \caption{Binary buddy deallocation algorithm}
-    \label{alg:bbuddy_dealloc}
-    \begin{algorithmic}[1]
-        \Statex \textbf{Procedure} Deallocate(block)
-        \State $level \gets \text{level of } block$
+  \caption{Binary buddy deallocation algorithm}
+  \label{alg:bbuddy_dealloc}
+  \begin{algorithmic}[1]
+    \Statex \textbf{Procedure} Deallocate(block)
+    \State $level \gets \text{level of } block$
 
-        \While{true}
-        \State $buddy \gets \text{find buddy of } block$
-        \If{$\text{buddy is not free}$}
-        \State $\text{add } block \text{ to free list of level } level$
-        \State \textbf{break}
-        \Else
-        \State $\text{remove } buddy \text{ from free list of level } level$
-        \State $block \gets \text{merge } block \text{ and } buddy$
-        \State $level \gets level + 1$
-        \EndIf
-        \EndWhile
-    \end{algorithmic}
+    \While{true}
+    \State $buddy \gets \text{find buddy of } block$
+    \If{$\text{buddy is not free}$}
+    \State $\text{add } block \text{ to free list of level } level$
+    \State \textbf{break}
+    \Else
+    \State $\text{remove } buddy \text{ from free list of level } level$
+    \State $block \gets \text{merge } block \text{ and } buddy$
+    \State $level \gets level + 1$
+    \EndIf
+    \EndWhile
+  \end{algorithmic}
 \end{algorithm}
-\FloatBarrier
 
 \subsection{Determining Buddy State}
 When deallocating a block, the allocator must determine the state of its corresponding buddy. This is done using a bitmap, each entry indicating if a block has been allocated or not. The allocator assigns a unique number to each block that can potentially be allocated. Figure~\ref{fig:buddyorder} provides an illustration of all possible blocks and their respective numbering. The bitmap requires a total of $2^n - 1$ entries, where $n$ is the number of levels of potential block sizes.
 
 \begin{figure}[h]
-    \centering
-    \includesvg[width=0.525\textwidth]{figures/bbuddy_order.svg}
-    \caption{Unique numbering of each possible block in a binary buddy allocator.}
-    \label{fig:buddyorder}
+  \centering
+  \includesvg[width=0.525\textwidth]{figures/bbuddy_order.svg}
+  \caption{Unique numbering of each possible block in a binary buddy allocator.}
+  \label{fig:buddyorder}
 \end{figure}
 % \vspace{-0.7cm}
 The bitmap is correlated with the available blocks in the free-list and is modified both when splitting and merging blocks. For example, Figure~\ref{fig:buddybmapallocated} shows the state of the bitmap of a binary buddy allocator after one 16-byte allocation. We can see that the largest block has been split down to the smallest size, and that the buddies of the used blocks are marked in the bitmap as available.
@@ -99,10 +97,10 @@ The bitmap is correlated with the available blocks in the free-list and is modif
 % \end{figure}
 
 \begin{figure}[h]
-    \centering
-    \includesvg[width=0.65\textwidth]{figures/bbuddy_bmap_allocated.svg}
-    \caption{The state of the bitmap and free-list of a binary buddy allocator after one 16-byte allocation.}
-    \label{fig:buddybmapallocated}
+  \centering
+  \includesvg[width=0.65\textwidth]{figures/bbuddy_bmap_allocated.svg}
+  \caption{The state of the bitmap and free-list of a binary buddy allocator after one 16-byte allocation.}
+  \label{fig:buddybmapallocated}
 \end{figure}
 
 %%% Local Variables:

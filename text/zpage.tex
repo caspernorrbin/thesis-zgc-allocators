@@ -4,10 +4,10 @@ ZGC is a region-based garbage collector which allocates objects inside different
 \begin{table}[H]
     \centering
     \begin{tabular}{lllll}
-        Page Type   & Page Size     & \multicolumn{3}{l}{Object Size}      \\ \hline
-        Small       & 2 MB          & \multicolumn{3}{l}{{[}16B, 256KB{]}} \\
-        Medium      & 32 MB         & \multicolumn{3}{l}{(256KB, 4MB)}     \\
-        Large       & $\geq$ 4 MB   & \multicolumn{3}{l}{$\geq$ 4MB}       \\
+        Page Type & Page Size   & \multicolumn{3}{l}{Object Size}      \\ \hline
+        Small     & 2 MB        & \multicolumn{3}{l}{{[}16B, 256KB{]}} \\
+        Medium    & 32 MB       & \multicolumn{3}{l}{(256KB, 4MB)}     \\
+        Large     & $\geq$ 4 MB & \multicolumn{3}{l}{$\geq$ 4MB}       \\
     \end{tabular}
     \caption{Page sizes in ZGC. (Figure taken from~\cite{zgc:zpage_size_table}). }
     \label{table:zpage_sizes}
@@ -18,13 +18,13 @@ Pages in ZGC include metadata that allows them to perform allocations efficientl
 \begin{description}
     \item[Bump Pointer]
         The bump pointer is a pointer within the page's memory range that stores the location of where new allocations are made inside the page. Its functionality and use-case are explained in detail in Section~\ref{sec:bump_pointer}. All allocations inside pages in ZGC are currently done using bump pointers. In Figure~\ref{fig:zpages}, the bump pointer is displayed below four allocated objects, indicating that the next position to allocate objects at would be below the fourth object.
-
+        
     \item[Live Map]
         The live map is used to keep track of which objects are currently live and have been marked as reachable by the program. Objects not marked in the live map are considered dead. The live map is shown on the right-hand side of Figure~\ref{fig:zpages}. It is constructed during the marking phase of the GC cycle as live objects are encountered during memory traversal and marked in the live map. The live map is represented by a bitmap, where each bit is mapped to an 8-byte chunk of the page. If a bit is set, there is a live object at the corresponding address on the page. The live map is used during the compacting phase of the GC in order to know how much memory is alive inside the page.
         \newpage
     \item[Sequence Number]
         Every page has a sequence number denoting during which GC cycle it was created. If the GC is on its $N$th cycle, pages created during that GC cycle will have a sequence number $N$. Pages with sequence number $N$ are called \textit{allocating} pages, and are the only pages which allocate new objects for mutator threads. Pages with a sequence number below the current GC cycle, $0$--$N-1$ are called \textit{relocatable} pages since there will be no additional allocations done inside them during the GC cycle, and garbage can be reclaimed with the use of relocation. For example, if the current Java program has performed 5 GC cycles, any allocations after that will be exclusively done on pages with sequence number 5. If the program decides to run a 6th cycle, only garbage from pages with sequence numbers 0 through 5 will be collected, and new allocations will be done on pages with sequence number 6.
-
+        
     \item[Age]
         ZGC is a generational garbage collector, meaning it treats objects of varying ages differently to improve performance. This is based on the observation that most objects survive for only a short period and those that survive for longer tend to live for a long time. ZGC applies this approach on a page-by-page basis, where all allocations on a page share the same age, which is conveniently stored on each page instead of for every object. Objects are grouped into three different age categories: \textit{Eden}, \textit{Survivor} and \textit{Old}. The \textit{Eden} age is for first-time allocation, \textit{Survivor} signifies objects that have survived one or more GC cycles and \textit{Old} those that have survived a threshold of cycles in the \textit{Survivor} age. Classifying pages this way allows the GC to treat pages of a certain age differently, which is especially useful for \textit{Eden} pages, which tend to accumulate garbage quickly.
 \end{description}
@@ -32,7 +32,7 @@ Pages in ZGC include metadata that allows them to perform allocations efficientl
 \begin{figure}[H]
     \centering
     \includesvg[scale=0.8]{figures/zpage_withage.svg}
-    \caption{Illustration of a page in ZGC showing what kind of metadata is kept track of to facilitate allocation and object bookkeeping. The page contains three live objects marked in green and with the corresponding bit set in the live map to the right. Red objects are previously allocated objects which have since become unreachable garbage memory.} 
+    \caption{Illustration of a page in ZGC showing what kind of metadata is kept track of to facilitate allocation and object bookkeeping. The page contains three live objects marked in green and with the corresponding bit set in the live map to the right. Red objects are previously allocated objects which have since become unreachable garbage memory.}
     \label{fig:zpages}
 \end{figure}
 
@@ -147,7 +147,7 @@ Typically, many sparsely populated pages can be compacted onto a single new page
     \caption{An example of how in-place compaction is done to remove fragmentation.}
     \label{fig:zrel_in}
 \end{figure}
- 
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "main"

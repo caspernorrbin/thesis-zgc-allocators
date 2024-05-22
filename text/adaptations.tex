@@ -1,11 +1,10 @@
-As discussed in Section~\ref{sec:buddyadditions}, there is ample room to improve the original binary buddy allocator. The two designs discussed have different strengths, so both are implemented to compare and contrast with each other and the original design. The binary tree allocator closely resembles the binary buddy allocator in its allocation method, whereas the ibuddy allocator differs significantly. Both allocators are investigated to determine the most efficient allocation and deallocation processes for all possible allocatable sizes.
+As discussed in Section~\ref{sec:buddyadditions}, there is ample room to improve the original binary buddy allocator. The two designs discussed have different strengths, so both are implemented to compare and contrast with each other and the original design. The binary tree allocator closely resembles the binary buddy allocator in its allocation method, whereas the iBuddy allocator differs significantly. Both allocators are investigated to determine the most efficient allocation and deallocation processes for all possible allocatable sizes.
 
 Further enhancements can be developed that are orthogonal to the specific allocator implementations. These enhancements can be general optimizations or specifically tailored to the context of operating within ZGC. Constraining the use case enables the allocators to assume access to additional information or to narrow their functionality.
 
 \subsection{Use Cases}
-There are numerous scenarios in which a garbage collector could benefit from an advanced memory allocator, many of which are beyond the scope of this thesis. Each scenario has distinct characteristics and unique requirements. Therefore, improvements should enhance specific scenarios without causing adverse effects in other situations. If a modification has negative repercussions on other scenarios, it must be possible to disable that change, allowing each scenario to utilize the most suitable configuration.
+There are numerous scenarios in which a garbage collector could benefit from an advanced memory allocator, many of which are beyond the scope of this thesis. Each scenario has distinct characteristics and unique requirements. Therefore, improvements should enhance specific scenarios without causing adverse effects in other situations. If a modification has negative repercussions for other scenarios, it must be possible to disable that change, allowing each scenario to utilize the most suitable configuration.
 
-\newpage
 Making the allocator configurable in this way improves its adaptability to a wide range of scenarios. Although this versatility is advantageous, it may lead to limitations in certain instances. Prioritizing configurability can hinder the allocator from being fully optimized for one particular use case. Significant modifications to enhance one specific scenario could adversely affect others. Such changes were not considered during the allocators' adaptation because of their perceived narrow focus.
 
 \subsection{Allocator Metadata Implementations} \label{sec:adaptationsmetadata}
@@ -13,19 +12,19 @@ The binary tree allocator retains the design of the original binary buddy alloca
 
 The binary tree is stored as a flattened byte array, with each level stored contiguously following the preceding one. Most levels have each byte representing the value of a single block, but the lowest levels deviate from this pattern. Each node in the tree holds the maximum possible level that can be allocated within it or its children. The smallest blocks can only store $1$ or $0$, enabling memory optimization by compacting and storing 8 blocks within each byte in the array. Optimizing this level, which contains half of the total blocks, results in memory savings of $43.75$\%. Similarly, the data for the next two levels can be compacted to 2 bits per block, further reducing memory by $28.13$\%. Higher levels require at least $4$ bits of information and constitute a smaller fraction of total blocks, so their memory is not optimized to avoid performance impacts from bit operations.
 
+\newpage
 \subsection{Allocating on Already Used Memory} \label{sec:freerangeexpl}
 In certain situations, using an allocator may not be the most efficient option. For instance, bump-pointer allocation could be used initially, switching to a more advanced allocator when significant external fragmentation arises. This approach maximizes the speed advantage of bump-pointer allocations while leveraging advanced allocators when necessary.
 
 In the context of ZGC, the allocator must be able to allocate around occupied chunks within its memory area. This imposes limitations on the allocator, preventing it from assuming that memory is available for its utilization. This affects where the allocator metadata can be stored, as it is commonly stored within its own memory region.
 
-\newpage
 When working with previously allocated memory, the allocator starts fully occupied, with no available locations for allocation. The user must indicate the locations of occupied memory or the intervals between them, defining free regions that the allocator can use. In ZGC, live analysis of a page provides information on live objects, enabling deallocation of the intervals between them.
 
-To implement this, the allocator's initial state is fully occupied with the smallest-sized blocks, avoiding accidental merging of blocks overlapping with occupied regions. During deallocation of a specific range, the largest fitting blocks are added to the free-list, and each block and its split children are marked as no longer split. Figure~\ref{fig:deallocrange} illustrates this process, showing blocks added to the free-list covering the entire free range.
+To implement this, the allocator's initial state is fully occupied with the smallest-sized blocks, avoiding accidental merging of blocks overlapping with occupied regions. During the deallocation of a specific range, the largest fitting blocks are added to the free-list, and each block and its split children are marked as no longer split. Figure~\ref{fig:deallocrange} illustrates this process, showing blocks added to the free-list covering the entire free range.
 
 \begin{figure}[h]
     \centering
-    \includesvg[width=0.7\textwidth]{figures/deallocrange.svg}
+    \includesvg[width=0.62\textwidth]{figures/deallocrange.svg}
     \caption{The blocks added to the free-list after deallocating the range up until the last block.}
     \label{fig:deallocrange}
 \end{figure}
@@ -33,13 +32,13 @@ To implement this, the allocator's initial state is fully occupied with the smal
 \subsection{Finding Block Buddies} \label{sec:findbuddiesexpl}
 When deallocating, the allocator must determine the correct block to deallocate based on the memory address. Since an address can belong to any block level, additional information is required. The simplest solution is to require the user to provide the allocated size, allowing the allocator to calculate the deallocation level. This method is fast and incurs minimal overhead.
 
-Alternatively, the level of each allocation can be stored inside the block or in a separate data structure. Although this is simple and allows for fast lookup, it is not very memory efficient. If the data is stored within a block, the usable space decreases. Storing data separately for each possible block location results in a slightly larger but constant overhead.
+Alternatively, the level of each allocation can be stored inside the block or in a separate data structure. Although this is simple and allows for fast lookups, it is not very memory-efficient. If the data is stored within a block, the usable space decreases. Storing data separately for each possible block location results in a slightly larger but constant overhead.
 
-A third approach uses a bitmap to track which blocks have been split. This method is very memory efficient but requires more operations to find the correct blocks. Figure~\ref{fig:buddybmapsplit} illustrates this bitmap after a 16-byte block allocation, showing all blocks above the allocated block marked as split. The smallest blocks do not require an entry in the bitmap, as they cannot be split. During deallocation, the allocator starts at the top of the bitmap and traverses down until the block is no longer marked as split.
+A third approach uses a bitmap to track which blocks have been split. This method is very memory-efficient but requires more operations to find the correct blocks. Figure~\ref{fig:buddybmapsplit} illustrates this bitmap after a 16-byte block allocation, showing all blocks above the allocated block marked as split. The smallest blocks do not require an entry in the bitmap, as they cannot be split. During deallocation, the allocator starts at the top of the bitmap and traverses down until the block is no longer marked as split.
 
 \begin{figure}[h]
     \centering
-    \includesvg[width=0.7\textwidth]{figures/bbuddy_bmap_split.svg}
+    \includesvg[width=0.64\textwidth]{figures/bbuddy_bmap_split.svg}
     \caption{The state of the split blocks-bitmap and free-list of a binary buddy allocator after one 16-byte allocation.}
     \label{fig:buddybmapsplit}
 \end{figure}
@@ -48,13 +47,12 @@ All options are implemented and can be used in the allocators, with the most sui
 
 For use within ZGC, data structures responsible for tracking size can be omitted, delegating this function to the garbage collector. The collector has sufficient data from its live analysis and object headers to compute the size of each object and allocation. This approach eliminates additional overhead, making optimal use of existing resources.
 
-\newpage
 \subsection{Lazy Splitting and Merging of Blocks} \label{sec:lazyexpl}
 Splitting and merging blocks is costly and should be avoided if possible. The binary buddy allocator merges blocks whenever possible, often requiring immediate splitting for subsequent allocations. Lee and Barkley \cite{lazylayer} designed a modified buddy allocator that delays block merging. As long as the allocation size distribution remains consistent, costs related to splitting and merging can be avoided. A simpler version of Lee and Barkley's design is implemented, with a second free-list (lazy layer) on top of the buddy allocator (buddy layer). This separate free-list does not perform any splitting or merging and solely stores blocks of different sizes.
 
 When deallocating using a lazy layer, the block is inserted into the lazy layer's free-list. If the lazy layer reaches a certain threshold of blocks, the block is inserted into the buddy layer as normal. During allocation, the lazy layer is checked first for a suitable block, followed by splitting blocks from the buddy layer if necessary. If both steps fail, the lazy layer can be emptied to allow smaller blocks to be merged to meet the required allocation size.
 
-It is logical for different block sizes to have different thresholds, as the frequency of sizes differ. Since most allocations are small, it is also logical that that size should have a higher threshold. Storing large blocks in the lazy layer would also reserve these large blocks for only that size, which could lead to smaller allocations not being able to be fulfilled. When implementing this, the smallest block size has the highest threshold, with each level above that halving the threshold of the previous level. The default threshold is set to 1000. A high value is desired, as ZGC can often deallocate many objects to then allocate many objects of the same size. The lazy layer needs the capacity to support this, which is why the threshold is set relatively high.
+It is logical for different block sizes to have different thresholds, as the frequency of sizes differs. Since most allocations are small, it is also logical that that size should have a higher threshold. Storing large blocks in the lazy layer would also reserve these large blocks for only that size, which could lead to smaller allocations not being able to be fulfilled. When implementing this, the smallest block size has the highest threshold, with each level above that halving the threshold of the previous level. The default threshold is set to 1000. A high value is desired, as ZGC can often deallocate many objects to then allocate many objects of the same size. The lazy layer needs the capacity to support this, which is why the threshold is set relatively high.
 
 Different block sizes have different thresholds, with the smallest block size having the highest threshold. Large blocks in the lazy layer could prevent smaller allocations from being fulfilled, so thresholds decrease for larger block sizes. The default threshold is set to 1000 for the smallest block size, with the threshold halving for each level above that. A high threshold is desired, as ZGC could deallocate many objects to afterward allocate many objects of the same size. The lazy layer needs the capacity to support this, which is why the threshold is set relatively high.
 
