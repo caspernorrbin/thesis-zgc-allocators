@@ -9,6 +9,7 @@ Currently, the minimum allocation size in ZGC is 16 bytes, constrained by the he
 
 Reducing the minimum allocation size would introduce a new bottom layer for the allocators. Practically, this results in memory overhead per page doubling as it becomes necessary to manage and track smaller allocations. Additionally, for the binary buddy and iBuddy allocators, storing the two pointers needed for the free-list would no longer be feasible. These pointers would need to be transformed into offsets from the beginning of the page. Although the size of the pages makes this adjustment manageable, it would still introduce some performance overhead.
 
+\newpage
 \subsection{Further Allocation Optimizations} \label{sec:futureworkOptimizations}
 Improving the binary tree storage format in the binary tree allocator might be feasible. Currently, the levels of the tree are stored sequentially, requiring progressively larger jumps when iterating the levels. To increase spatial locality, the larger tree could be broken down into several subtrees stored consecutively. This would place the segments closer together, reducing the likelihood of cache misses and potentially increasing performance.
 
