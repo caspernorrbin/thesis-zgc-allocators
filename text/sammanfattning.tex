@@ -1,4 +1,10 @@
-Översätts från abstract när den anses vara färdig/korrekt.
+I dagens mjukvaruutvecklingsmiljö är Java fortfarande ett av de främsta språken och driver många applikationer. Centralt för Javas effektivitet är Java Virtual Machine (JVM), där HotSpot är en nyckelimplementation. Inom HotSpot är skräpsamling (GC) kritiskt för effektiv minneshantering, där en av samlarna är Z (ZGC), designad för minimal latens och hög genomströmning.
+
+ZGC använder främst bump-pointer-allokering, vilket är snabbt men kan leda till fragmenteringsproblem. En alternativ allokeringsstrategi innebär användning av free-listor för att dynamiskt hantera minnesblock av olika storlekar, såsom buddyallokatorn. Denna avhandling utforskar anpassning och utvärdering av buddyallokatorer för potentiell integration inom ZGC, med målet att förbättra minnesallokeringseffektivitet och minimera fragmentering.
+
+Avhandlingen undersöker den binära buddyallokatorn, binärträdsbuddyallokatorn och den inversa buddyallokatorn, och bedömer deras prestanda och lämplighet för ZGC. Även om de inte integreras i ZGC, ger dessa utforskande modifieringar och utvärderingar insikt i deras beteende och prestanda i ett GC-sammanhang. Studien visar att även om buddyallokatorer erbjuder lovande lösningar på fragmentering, kräver de noggrann anpassning för att hantera de unika kraven i ZGC.
+
+De slutsatser som dras från denna forskning belyser potentialen hos allokatorer baserade på free-listor att förbättra minneshanteringen i Java-applikationer. Dessa framsteg kan minska latens orsakad av GC och förbättra skalbarheten hos Java-baserade system, vilket möter de växande kraven från moderna mjukvaruapplikationer.
 
 %%% Local Variables:
 %%% mode: latex
