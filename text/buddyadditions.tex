@@ -154,7 +154,9 @@ As an example of the deallocation process, consider Figure~\ref{fig:ibuddydeallo
   \label{fig:ibuddydeallocated}
 \end{figure}
 
-\begin{algorithm}[h]
+Similar to allocation, the deallocation speedup for smaller blocks comes at the cost of larger blocks. When deallocating a large block, all the smaller blocks within that block also need to be inserted back into the free-list and bitmap. Thus, the operation of deallocating a large block is equivalent in cost to individually deallocating each of the smallest-size blocks that make up the larger block. This is more costly than a binary buddy, where larger blocks require the least work as they merge the fewest number of times.
+
+\begin{algorithm}[H]
   \caption{iBuddy deallocation algorithm}
   \label{alg:ibuddy_dealloc}
   \begin{algorithmic}[1]
@@ -171,5 +173,3 @@ As an example of the deallocation process, consider Figure~\ref{fig:ibuddydeallo
 
   \end{algorithmic}
 \end{algorithm}
-
-Similar to allocation, the deallocation speedup for smaller blocks comes at the cost of larger blocks. When deallocating a large block, all the smaller blocks within that block also need to be inserted back into the free-list and bitmap. Thus, the operation of deallocating a large block is equivalent in cost to individually deallocating each of the smallest-size blocks that make up the larger block. This is more costly than a binary buddy, where larger blocks require the least work as they merge the fewest number of times.

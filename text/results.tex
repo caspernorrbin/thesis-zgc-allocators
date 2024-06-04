@@ -130,6 +130,7 @@ The binary tree allocator was similar to the binary buddy allocator, with the la
   \label{fig:fragextbt}
 \end{figure}
 
+\newpage
 The iBuddy allocator stands out due to its aggressive splitting policy. The most common size of free blocks was $2^6$, which also constituted a substantial portion of the total free space. The largest total space was found around $2^{13}$, although it was more evenly distributed between sizes. This concentration at $2^6$ resulted from most allocations exceeding this size, which led to blocks being split until this size. The overall free space was greater than that of the other two allocators, suggesting less efficiency in utilizing memory.
 
 \begin{figure}[h]

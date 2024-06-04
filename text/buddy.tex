@@ -90,7 +90,7 @@ When deallocating a block, the allocator must determine the state of its corresp
 The bitmap is correlated with the available blocks in the free-list and is modified both when splitting and merging blocks. For example, Figure~\ref{fig:buddybmapallocated} shows the state of the bitmap of a binary buddy allocator after one 16-byte allocation. It can be seen that the largest block has been split down to the smallest size and that the buddies of the used blocks are marked in the bitmap as available.
 % \vspace{-0.1cm}
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includesvg[width=0.635\textwidth]{figures/bbuddy_bmap_allocated.svg}
     \caption{The state of the bitmap and free-list of a binary buddy allocator after one 16-byte allocation.}
