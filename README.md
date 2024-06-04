@@ -19,6 +19,12 @@ The full thesis can be accessed and downloaded from Diva, the academic archive o
 
 [Adapting and Evaluating Buddy Allocators for use Within ZGC - Diva Portal](https://www.diva-portal.org/)
 
+## Code
+
+The code developed for this project is located in a separate repository. It can be accessed from the link below:
+
+[Buddy Allocators at Oracle](https://github.com/caspernorrbin/buddy-allocators-zgc)
+
 ## Building 
 
 ### Prerequisites
