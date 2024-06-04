@@ -27,6 +27,13 @@
 \usepackage{algpseudocode}
 \usepackage{amsmath}
 \usepackage{placeins}
+\usepackage{afterpage}
+\newcommand\emptypage{
+    \null
+    \thispagestyle{empty}
+    \addtocounter{page}{-1}
+    \newpage
+    }
 
 % För att göra ett index behövs
 %  - \usepackage{makeidx}
@@ -78,6 +85,7 @@
 
 % This creates the title page
 \maketitle
+\emptypage
 
 % Change to frontmatter style (e.g. roman page numbers)
 \frontmatter
@@ -86,7 +94,6 @@
 %%%% Tips: ni kan använda separata filer för de olika delarna i er rapport på motsvarande sätt,
 %%%% men använd inte samma filnamn!
 
-\cleardoublepage
 \begin{abstract}
   \input{text/abstract}
 \end{abstract}
