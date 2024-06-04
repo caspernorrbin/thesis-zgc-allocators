@@ -16,7 +16,7 @@ Among the free-list strategies outlined in Section~\ref{sec:freelist_allocation}
 
 The Concurrent Mark Sweep (CMS) garbage collector~\cite{cms}, introduced in JDK 1.4, stands as a concrete example of free-lists being used within real-world garbage collectors. CMS implements a concurrent variant of the mark-sweep algorithm, thereby utilizing free-lists for managing memory. Although it was deprecated in JDK 9, CMS demonstrates the practicality of using free-lists in garbage collectors. The presence of free-lists, particularly in the context of Java program execution, highlights their versatility and adaptability across different garbage collection algorithms and implementations.
 
-It is evident that there exists a space for free-list-based allocators to exist within garbage collection systems. Furthermore, we know that the use of multiple allocation strategies in tandem can enhance allocation efficiency. Therefore, it is reasonable to suggest implementing a free-list-based allocator, such as the buddy allocator, into a garbage collection system, such as ZGC, as an alternative strategy to boost performance in certain situations.
+It is evident that there exists a space for free-list-based allocators to exist within garbage collection systems. Furthermore, it is known that the use of multiple allocation strategies in tandem can enhance allocation efficiency. Therefore, it is reasonable to suggest implementing a free-list-based allocator, such as the buddy allocator, into a garbage collection system, such as ZGC, as an alternative strategy to boost performance in certain situations.
 
 %%% Local Variables:
 %%% mode: latex

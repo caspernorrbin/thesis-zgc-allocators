@@ -48,7 +48,7 @@ When allocating with a binary tree, the level required for the allocation size i
   \end{algorithmic}
 \end{algorithm}
 
-To illustrate this, Figure~\ref{fig:btbudydallocated} shows the state of a binary tree buddy allocator following the allocation of a 32-byte and a 16-byte block. We can see that the initial allocation is placed in the leftmost node at the second-lowest level, while the subsequent allocation is placed to the right of it at the lowest level. Consequently, the entire left branch of the binary tree now only contains one 16-byte block, as indicated by one being stored in the respective nodes.
+To illustrate this, Figure~\ref{fig:btbudydallocated} shows the state of a binary tree buddy allocator following the allocation of a 32-byte and a 16-byte block. It can be seen that the initial allocation is placed in the leftmost node at the second-lowest level, while the subsequent allocation is placed to the right of it at the lowest level. Consequently, the entire left branch of the binary tree now only contains one 16-byte block, as indicated by one being stored in the respective nodes.
 
 \begin{figure}[h]
   \centering
@@ -84,7 +84,7 @@ Deallocation in a binary tree buddy allocator is also a simple process. Initiall
 Allocating the smallest block size in a binary buddy allocator requires the most total block splits. To improve the speed of allocating these blocks, adjustments are necessary. Park et al.~\cite{park2014ibuddy} proposed an alternative method for organizing the metadata of a binary buddy allocator, which they call an inverse buddy allocator (iBuddy allocator). An iBuddy allocator can allocate individual blocks in constant time, although at the expense of slower allocations for larger blocks. Rather than dividing larger blocks into smaller ones to fulfill allocations, all blocks are initially split, and merging is only done during larger allocations.
 
 \subsubsection{Allocation in an Inverse Buddy Allocator}
-In an iBuddy allocator, blocks of different sizes that overlap the same memory are all present in the free-list and bitmap at the same time. Consider Figure~\ref{fig:ibuddyinitial}, which shows a valid initial state of an iBuddy allocator. We can see that all potential addresses for the smallest-size blocks are present in the free-list but at different levels. In the iBuddy allocator, the bitmap takes on additional meaning. When a block is marked as free, it implies that all smaller blocks at that memory location are also free and available for allocation.
+In an iBuddy allocator, blocks of different sizes that overlap the same memory are all present in the free-list and bitmap at the same time. Consider Figure~\ref{fig:ibuddyinitial}, which shows a valid initial state of an iBuddy allocator. It can be seen that all potential addresses for the smallest-size blocks are present in the free-list but at different levels. In the iBuddy allocator, the bitmap takes on additional meaning. When a block is marked as free, it implies that all smaller blocks at that memory location are also free and available for allocation.
 
 \begin{figure}[h]
   \centering
@@ -105,7 +105,7 @@ Due to the new structure of the bitmap, it is possible to allocate single-sized 
 
 Fast allocation speed for small blocks comes at the cost of slow allocation speed for larger blocks. In contrast to a binary buddy allocator, blocks cannot simply be removed, as there are now overlapping smaller blocks present in the free-list and bitmap. These must be removed to avoid allocating the same memory location twice. An algorithmic explanation of this process can be found in Algorithm~\ref{alg:ibuddy_alloc}.
 
-Consider Figure~\ref{fig:ibuddyallocated2}, which shows the same allocator as in the previous figure, now with an additional 64-byte allocation. We can see once again that the highest-level block has been removed, but now, all the blocks under it have also been cleared from both the free-list and the bitmap. For larger blocks, the allocation speed is proportional to the number of smallest-sized blocks needed to fill the requested size.
+Consider Figure~\ref{fig:ibuddyallocated2}, which shows the same allocator as in the previous figure, now with an additional 64-byte allocation. It can once again be seen that the highest-level block has been removed, but now, all the blocks under it have also been cleared from both the free-list and the bitmap. For larger blocks, the allocation speed is proportional to the number of smallest-sized blocks needed to fill the requested size.
 
 \begin{algorithm}[h]
   \caption{iBuddy allocation algorithm}
