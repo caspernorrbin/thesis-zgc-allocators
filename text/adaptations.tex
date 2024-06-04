@@ -10,9 +10,9 @@ Making the allocator configurable in this way improves its adaptability to a wid
 \subsection{Allocator Metadata Implementations} \label{sec:adaptationsmetadata}
 The binary tree allocator retains the design of the original binary buddy allocator but stores its metadata in a different format. This approach allows for faster operations, as there is no explicit free-list that needs to be managed.
 
+\newpage
 The binary tree is stored as a flattened byte array, with each level stored contiguously following the preceding one. Most levels have each byte representing the value of a single block, but the lowest levels deviate from this pattern. Each node in the tree holds the maximum possible level that can be allocated within it or its children. The smallest blocks can only store $1$ or $0$, enabling memory optimization by compacting and storing 8 blocks within each byte in the array. Optimizing this level, which contains half of the total blocks, results in memory savings of $43.75$\%. Similarly, the data for the next two levels can be compacted to 2 bits per block, further reducing memory by $28.13$\%. Higher levels require at least $4$ bits of information and constitute a smaller fraction of total blocks, so their memory is not optimized to avoid performance impacts from bit operations.
 
-\newpage
 \subsection{Allocating on Already Used Memory} \label{sec:freerangeexpl}
 In certain situations, using an allocator may not be the most efficient option. For instance, bump-pointer allocation could be used initially, switching to a more advanced allocator when significant external fragmentation arises. This approach maximizes the speed advantage of bump-pointer allocations while leveraging advanced allocators when necessary.
 
@@ -54,12 +54,9 @@ When deallocating using a lazy layer, the block is inserted into the lazy layer'
 
 It is logical for different block sizes to have different thresholds, as the frequency of sizes differs. Since most allocations are small, it is also logical that that size should have a higher threshold. Storing large blocks in the lazy layer would also reserve these large blocks for only that size, which could lead to smaller allocations not being able to be fulfilled. When implementing this, the smallest block size has the highest threshold, with each level above that halving the threshold of the previous level. The default threshold is set to 1000. A high value is desired, as ZGC can often deallocate many objects to then allocate many objects of the same size. The lazy layer needs the capacity to support this, which is why the threshold is set relatively high.
 
+\newpage
 Different block sizes have different thresholds, with the smallest block size having the highest threshold. Large blocks in the lazy layer could prevent smaller allocations from being fulfilled, so thresholds decrease for larger block sizes. The default threshold is set to 1000 for the smallest block size, with the threshold halving for each level above that. A high threshold is desired, as ZGC could deallocate many objects to afterward allocate many objects of the same size. The lazy layer needs the capacity to support this, which is why the threshold is set relatively high.
 
-% \subsection{Skewed Allocation Distribution} \label{sec:skewedexpl}
-% In the binary buddy allocator, smaller blocks require more work due to the need for more splits and more potential merges. This contrasts with real-world scenarios, where smaller allocations are more frequent and larger ones are less common. Ideally, the allocation and deallocation processes should be most efficient for the most commonly requested allocation size.
-
-\newpage
 \subsection{Allocator Regions} \label{sec:concurrencyexpl}
 In the original binary buddy allocator, the largest block equals the entire provided memory, which is then split into smaller blocks during allocation. This approach can degrade performance in multithreaded programs with concurrent allocations, as only one allocation can split a large block at a time.
 
