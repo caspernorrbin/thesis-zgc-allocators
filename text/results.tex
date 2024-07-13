@@ -1,4 +1,4 @@
-This section presents the results of the evaluation described in Section~\ref{sec:evaluation}. The three buddy allocators presented in Sections~\ref{sec:buddy} and \ref{sec:buddyadditions}, as well as the adaptations made in Section~\ref{sec:adaptations}, were evaluated based on their performance, memory overhead, and fragmentation. The results are presented in the following subsections.
+This section presents the results of the evaluation described in Section~\ref{sec:evaluation}. The three buddy allocators presented in Sections~\ref{sec:buddy} and \ref{sec:buddyadditions}, as well as the adaptations made in Section~\ref{sec:adaptations}, were evaluated based on their performance, memory overhead, and fragmentation.
 
 \subsection{Memory Overhead}
 The binary buddy allocator is the most efficient in terms of memory usage, requiring the least data. As discussed in Section~\ref{sec:metadataexpl}, the allocator only needs to store the state of each block, which can be represented by a single bit. Additonally, the binary buddy allocator can merge the states of two buddy blocks into a single bit. In the ZGC configuration, this resulted in a total overhead of $16$ KiB per $2$ MiB page, or $0.78$\%.
@@ -31,7 +31,7 @@ Both the binary buddy and binary tree allocators demonstrated faster allocation 
     \caption{Allocation benchmark results from machine B.}
     \label{fig:allocB}
   \end{subfigure}
-  \caption{Performance of individual allocations across various block sizes and allocators. The benchmark is run on both machines, and each bar displays the mean results from 100 000 iterations.}
+  \caption{Performance of individual allocations across various block sizes and allocators. The benchmark is run on both machines, and each bar displays the mean results from 100 000 allocations.}
   \label{fig:allocbenchmark}
 \end{figure}
 
@@ -58,7 +58,7 @@ Both the binary buddy and binary tree allocators demonstrated faster deallocatio
     \caption{Deallocation benchmark results from machine B}
     \label{fig:deallocB}
   \end{subfigure}
-  \caption{Performance of individual allocations across various block sizes and allocators. The benchmark is run on both machines, and each bar displays the mean results from 100 000 iterations.}
+  \caption{Performance of individual allocations across various block sizes and allocators. The benchmark is run on both machines, and each bar displays the mean results from 100 000 deallocations.}
   \label{fig:deallocbenchmark}
 \end{figure}
 

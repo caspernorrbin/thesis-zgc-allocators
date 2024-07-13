@@ -38,6 +38,7 @@ Performance evaluations were performed using two different machines, detailed in
     \label{table:performancespecs}
 \end{table}
 
+\newpage
 \subsection{Fragmentation} \label{sec:frageval}
 \subsubsection{Internal Fragmentation}
 Internal fragmentation occurs when allocation sizes are rounded to the nearest power of two to align with block sizes, and it is identical in all the allocators. This results in unused memory for every allocation that is not a perfect power of two. To quantify this, two counters were used: one for the requested allocation size and another for the total allocated size. Each allocation operation incremented these counters, while deallocation operations decremented them. At any point during program execution, these two counters could be compared to measure the amount of internal fragmentation. The percentage of internal fragmentation, or wasted memory, was calculated as:

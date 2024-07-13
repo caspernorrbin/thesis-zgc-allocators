@@ -35,7 +35,7 @@ A third approach uses a bitmap to track which blocks have been split. This metho
     \caption{The state of the split blocks-bitmap and free-list of a binary buddy allocator after one 16-byte allocation.}
     \label{fig:buddybmapsplit}
 \end{figure}
-
+\vspace{-0.1cm}
 All the three options are implemented and can be configured in the allocators, with the most suitable option depending on the specific usage scenario. For general use, the bitmap approach is the most memory-efficient across various allocator configurations.
 
 For use within ZGC, data structures responsible for tracking size can be omitted, delegating this function to the garbage collector. The collector has sufficient data from its live analysis and object headers to compute the size of each object and allocation. This approach eliminates additional overhead, making optimal use of existing resources.
@@ -65,6 +65,7 @@ It is logical for different block sizes to have different thresholds, as the fre
 
 Different block sizes have different thresholds, with the smallest block size having the highest threshold. Large blocks in the lazy layer could prevent smaller allocations from being fulfilled, so thresholds decrease for larger block sizes. The default threshold is set to 1000 for the smallest block size, with the threshold halving for each level above that. A high threshold is desired, as ZGC could deallocate many objects to afterward allocate many objects of the same size. The lazy layer needs the capacity to support this, which is why the threshold is set relatively high.
 
+\newpage
 \subsection{Allocator Regions} \label{sec:concurrencyexpl}
 In the original binary buddy allocator, the largest block equals the entire provided memory, which is then split into smaller blocks during allocation. This approach can degrade performance in multithreaded programs with concurrent allocations, as only one allocation can split a large block at a time.
 
@@ -76,6 +77,7 @@ One allocator controlls all regions, keeping shared metadata such as the lazy la
 
 Situations could arise where some regions become more heavily utilized than others, decreasing throughput. When a thread initiates an allocation, it is assigned a specific region. If another thread is allocating in that region, it checks the subsequent regions. If all regions are in use, the thread waits. Upon entering a region, the necessary allocation logic is performed. If an allocation fails due to insufficient space, the thread exits the region and retries in the next one. Allocation requests fail when all regions cannot accommodate the request.
 
+\newpage
 \subsection{Combining and Configuring the Adaptations} \label{sec:adaptationsall}
 All the mentioned adaptations build on top of any of the three different buddy allocators discussed in Sections~\ref{sec:buddy} and \ref{sec:buddyadditions}. Each adaptation can be enabled or disabled independently, allowing for a wide range of configurations. The user can select the most suitable configuration for their specific use case, optimizing the allocator for their needs. While the adapatations are designed to enhance the allocator's performance within ZGC, the configurability allows the user to optimize the allocator for any use case.
 
