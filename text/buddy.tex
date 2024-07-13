@@ -1,4 +1,4 @@
-The concept of a buddy memory allocator was first introduced by Knowlton~\cite{buddy}. The core idea of the buddy allocator involves dividing memory into blocks and pairing them as ``buddies''. These buddy pairs are split when allocating memory and merged when deallocating memory to allow allocations of different sizes. The simple design of the buddy allocator makes it attractive for various applications. For example, the Linux kernel implements a modified binary buddy allocator to manage physical memory~\cite{linuxbuddy}, and \texttt{jemalloc} adopts a buddy allocator for one of its memory allocation methods~\cite{jemalloc}.
+The concept of a buddy memory allocator was first introduced by Knowlton~\cite{buddy}. This section explains how the original buddy memory allocator operates, as envisioned by Knowlton. The core idea of the buddy allocator involves dividing memory into blocks and pairing them as ``buddies''. Buddy pairs are split when allocating memory and merged when deallocating memory to allow allocations of different sizes. The simple design of the buddy allocator makes it attractive for various applications. For example, the Linux kernel implements a modified binary buddy allocator to manage physical memory~\cite{linuxbuddy}, and \texttt{jemalloc} adopts a buddy allocator for one of its memory allocation methods~\cite{jemalloc}.
 
 \subsection{Allocation and Deallocation}
 The binary buddy allocator is the original and most basic type of buddy allocator. It partitions memory into blocks with sizes that are powers of 2. A free list of available blocks of different sizes is maintained to keep track of the free blocks. Initially, all memory is one large block. Figure~\ref{fig:buddystart} shows the initial state of a binary buddy allocator with a total memory of 128 bytes. It can be seen that the entire memory is contained within a single block, which is also included in the free list.
@@ -6,11 +6,11 @@ The binary buddy allocator is the original and most basic type of buddy allocato
 \begin{figure}[h]
     \centering
     \includesvg[width=0.61\textwidth]{figures/bbuddy_initial.svg}
-    \caption{The initial state of the free-list and memory in a binary buddy allocator.}
+    \caption{The initial state of the free-list and memory in a binary buddy allocator. Shown are the memory and the free-list of available blocks.}
     \label{fig:buddystart}
 \end{figure}
 
-When requesting memory, a block of the smallest size that can accommodate the requested memory will be returned. If there are no blocks of that size available, larger blocks will be recursively split into two until a block of the correct size is available. The split blocks are then added to the free list for future allocations. An algorithmic explanation of this process can be found in Algorithm~\ref{alg:bbuddy_alloc}.
+When requesting memory, a block of the smallest power-of-two size that can accommodate the requested memory will be returned. If there are no blocks of that size available, a larger block will be recursively split into two until a block of the correct size is available. The split blocks are added to the free list for future allocations. An algorithmic explanation of this process can be found in Algorithm~\ref{alg:bbuddy_alloc}.
 
 \begin{algorithm}[h]
     \caption{Binary buddy allocation algorithm}
@@ -42,18 +42,19 @@ When requesting memory, a block of the smallest size that can accommodate the re
     \end{algorithmic}
 \end{algorithm}
 
+\newpage
 As an example, consider Figure~\ref{fig:buddysplit}, which shows the resulting state of the previous figure after requesting 16 bytes of memory. The initial 128-byte block has been split multiple times to fulfill the request, with the leftmost block being returned and the addition of various block sizes to the free list.
 
 \begin{figure}[h]
     \centering
     \includesvg[width=0.62\textwidth]{figures/bbuddy_allocated.svg}
-    \caption{The state of the free-list and memory in a binary buddy allocator after one 16-byte allocation.}
+    \caption{The state of the free-list and memory in a binary buddy allocator after one 16-byte allocation. Shown are the memory and the free-list of available blocks. Each new line represents one step in the allocation process.}
     \label{fig:buddysplit}
 \end{figure}
 
 \FloatBarrier
 
-Deallocation is the reverse process of allocation. When a block is deallocated, it is merged with its buddy if the buddy is also deallocated. Merging creates a new, larger block. Afterward, the original block and its buddy are removed from the free list, and the new, larger block is inserted. The larger block checks the status of its buddy, and the merging process continues recursively until merging is no longer possible. An algorithmic explanation of this process can be found in Algorithm~\ref{alg:bbuddy_dealloc}. To demonstrate this process, consider the situation where the 16-byte block in Figure~\ref{fig:buddysplit} is deallocated. In this scenario, the block would go through a recursive merging process with its buddies until it reaches the initial state shown in Figure~\ref{fig:buddystart}.
+Deallocation is the reverse process of allocation. When a block is deallocated, it is merged with its buddy if the buddy is also deallocated. Merging creates a new, larger block. After merging, the original block and its buddy are removed from the free list, and the new, larger block is inserted. The larger block checks the status of its buddy, and the merging process continues recursively until merging is no longer possible. An algorithmic explanation of this process can be found in Algorithm~\ref{alg:bbuddy_dealloc}. To demonstrate this process, consider the situation where the 16-byte block in Figure~\ref{fig:buddysplit} is deallocated. In this scenario, the block would go through a recursive merging process with its buddies until it reaches the initial state shown in Figure~\ref{fig:buddystart}.
 
 \begin{algorithm}[h]
     \caption{Binary buddy deallocation algorithm}
