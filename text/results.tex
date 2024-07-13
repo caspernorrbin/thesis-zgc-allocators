@@ -1,6 +1,7 @@
+This section presents the results of the evaluation described in Section~\ref{sec:evaluation}. The three buddy allocators presented in Sections~\ref{sec:buddy} and \ref{sec:buddyadditions}, as well as the adaptations made in Section~\ref{sec:adaptations}, were evaluated based on their performance, memory overhead, and fragmentation. The results are presented in the following subsections.
 
 \subsection{Memory Overhead}
-The binary buddy allocator is the most efficient in terms of memory usage, requiring the least data. As discussed in Section~\ref{sec:metadataexpl}, the allocator only needs to store the state of each block, which can be represented by a single bit. Additonally, the binary buddy allocator can merge the states of two buddy blocks into a single bit using XOR operations. In the ZGC configuration, this resulted in a total overhead of $16$ KiB per $2$ MiB page, or $0.78$\%.
+The binary buddy allocator is the most efficient in terms of memory usage, requiring the least data. As discussed in Section~\ref{sec:metadataexpl}, the allocator only needs to store the state of each block, which can be represented by a single bit. Additonally, the binary buddy allocator can merge the states of two buddy blocks into a single bit. In the ZGC configuration, this resulted in a total overhead of $16$ KiB per $2$ MiB page, or $0.78$\%.
 
 The iBuddy allocator also requires storing each block's state, but the same optimizations are not possible due. Each block needs to set and read its state individually, as operations can be executed on multiple blocks at once. In the ZGC configuration, this led to an overall overhead of $32$ KiB per $2$ MiB page, or $1.56$\%.
 

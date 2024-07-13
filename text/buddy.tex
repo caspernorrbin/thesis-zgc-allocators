@@ -1,4 +1,4 @@
-The concept of a buddy memory allocator was first introduced by Knowlton~\cite{buddy}. This section explains how the original buddy memory allocator operates, as envisioned by Knowlton. The core idea of the buddy allocator involves dividing memory into blocks and pairing them as ``buddies''. Buddy pairs are split when allocating memory and merged when deallocating memory to allow allocations of different sizes. The simple design of the buddy allocator makes it attractive for various applications. For example, the Linux kernel implements a modified binary buddy allocator to manage physical memory~\cite{linuxbuddy}, and \texttt{jemalloc} adopts a buddy allocator for one of its memory allocation methods~\cite{jemalloc}.
+The concept of a buddy memory allocator was first introduced by Knowlton~\cite{buddy}. This section explains how the original buddy memory allocator operates, as designed by Knowlton. The core idea of the buddy allocator involves dividing memory into blocks and pairing them as ``buddies''. Buddy pairs are split when allocating memory and merged when deallocating memory to allow allocations of different sizes. The simple design of the buddy allocator makes it attractive for various applications. For example, the Linux kernel implements a modified binary buddy allocator to manage physical memory~\cite{linuxbuddy}, and \texttt{jemalloc} adopts a buddy allocator for one of its memory allocation methods~\cite{jemalloc}.
 
 \subsection{Allocation and Deallocation}
 The binary buddy allocator is the original and most basic type of buddy allocator. It partitions memory into blocks with sizes that are powers of 2. A free list of available blocks of different sizes is maintained to keep track of the free blocks. Initially, all memory is one large block. Figure~\ref{fig:buddystart} shows the initial state of a binary buddy allocator with a total memory of 128 bytes. It can be seen that the entire memory is contained within a single block, which is also included in the free list.
@@ -48,7 +48,7 @@ As an example, consider Figure~\ref{fig:buddysplit}, which shows the resulting s
 \begin{figure}[h]
     \centering
     \includesvg[width=0.62\textwidth]{figures/bbuddy_allocated.svg}
-    \caption{The state of the free-list and memory in a binary buddy allocator after one 16-byte allocation. Shown are the memory and the free-list of available blocks. Each new line represents one step in the allocation process.}
+    \caption{The state of the free-list and memory in a binary buddy allocator after one 16-byte allocation. Shown are the memory and the free-list of available blocks. Each new row represents one step in the allocation process.}
     \label{fig:buddysplit}
 \end{figure}
 
